@@ -1,13 +1,13 @@
-# Claude Status
+# Claude Panel
 
-[![npm version](https://img.shields.io/npm/v/claude-status.svg)](https://www.npmjs.com/package/claude-status)
-[![GitHub stars](https://img.shields.io/github/stars/MarioLuLu7/claude-status)](https://github.com/MarioLuLu7/claude-status)
+[![npm version](https://img.shields.io/npm/v/claude-panel.svg)](https://www.npmjs.com/package/claude-panel)
+[![GitHub stars](https://img.shields.io/github/stars/MarioLuLu7/claude-panel)](https://github.com/MarioLuLu7/claude-panel)
 
 > 实时监控 Claude Code 会话的 Web 仪表盘 — 工具调用、Token 估算、授权确认，一屏掌握。
 
 A real-time web dashboard for monitoring Claude Code sessions — track tool calls, estimate token usage, and authorize tools through a visual interface.
 
-![Claude Status Screenshot](https://raw.githubusercontent.com/MarioLuLu7/claude-status/main/screenshot.png)
+![Claude Panel Screenshot](https://raw.githubusercontent.com/MarioLuLu7/claude-panel/main/screenshot.png)
 
 ## Features
 
@@ -24,7 +24,7 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 ## Installation
 
 ```bash
-npm install -g claude-status
+npm install -g claude-panel
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ npm install -g claude-status
 After installation, simply run:
 
 ```bash
-claude-status
+claude-panel
 ```
 
 The dashboard will:
@@ -52,16 +52,16 @@ The dashboard will:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CLAUDE_STATUS_UI_PORT` | `3000` | HTTP server port for the dashboard |
-| `CLAUDE_STATUS_WS_PORT` | `3001` | WebSocket server port |
+| `CLAUDE_PANEL_UI_PORT` | `3000` | HTTP server port for the dashboard |
+| `CLAUDE_PANEL_WS_PORT` | `3001` | WebSocket server port |
 
 ```bash
-CLAUDE_STATUS_UI_PORT=8080 claude-status
+CLAUDE_PANEL_UI_PORT=8080 claude-panel
 ```
 
 ## How It Works
 
-Claude Status reads Claude Code's session files from `~/.claude/projects/` and watches for real-time updates. It automatically detects:
+Claude Panel reads Claude Code's session files from `~/.claude/projects/` and watches for real-time updates. It automatically detects:
 
 - Active VSCode windows (via lock files)
 - Current Claude Code sessions
@@ -70,7 +70,7 @@ Claude Status reads Claude Code's session files from `~/.claude/projects/` and w
 
 ### Automatic Settings Injection
 
-When you start `claude-status`, it automatically:
+When you start `claude-panel`, it automatically:
 
 1. Adds wildcard permissions to `~/.claude/settings.json` (skips VSCode popup confirmations)
 2. Configures the PreToolUse hook for tool authorization (optional)
@@ -81,7 +81,7 @@ These changes are automatically reverted when you stop the server.
 
 Claude Status can intercept tool calls and ask for your approval before Claude executes them:
 
-1. Start `claude-status`
+1. Start `claude-panel`
 2. The tool automatically configures the hook in Claude's settings
 3. When Claude attempts to run a Bash command, write a file, or edit code:
    - A dialog appears in the Web UI
@@ -94,8 +94,8 @@ The hook script uses PowerShell on Windows and times out after 60 seconds (defau
 
 ```bash
 # Clone the repo
-git clone https://github.com/MarioLuLu7/claude-status.git
-cd claude-status
+git clone https://github.com/MarioLuLu7/claude-panel.git
+cd claude-panel
 
 # Install dependencies
 npm install

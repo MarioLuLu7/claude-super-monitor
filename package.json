@@ -1,10 +1,10 @@
 {
-  "name": "claude-status",
+  "name": "claude-panel",
   "version": "0.1.0",
   "description": "Real-time web dashboard for monitoring Claude Code sessions — tool calls, tokens, and tool-use authorization in one view.",
   "type": "module",
   "bin": {
-    "claude-status": "./bin/claude-status.js"
+    "claude-panel": "./bin/claude-panel.js"
   },
   "files": [
     "bin",
@@ -18,7 +18,7 @@
     "build": "vue-tsc -b && vite build && tsc -p tsconfig.server.json && node --input-type=commonjs -e \"require('fs').writeFileSync('dist-server/package.json', JSON.stringify({type:'commonjs'}))\"",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
-    "start": "node bin/claude-status.js"
+    "start": "node bin/claude-panel.js"
   },
   "keywords": [
     "claude",
@@ -33,11 +33,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MarioLuLu7/claude-status.git"
+    "url": "https://github.com/MarioLuLu7/claude-panel.git"
   },
-  "homepage": "https://github.com/MarioLuLu7/claude-status#readme",
+  "homepage": "https://github.com/MarioLuLu7/claude-panel#readme",
   "bugs": {
-    "url": "https://github.com/MarioLuLu7/claude-status/issues"
+    "url": "https://github.com/MarioLuLu7/claude-panel/issues"
   },
   "engines": {
     "node": ">=18"
