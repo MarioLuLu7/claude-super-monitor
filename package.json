@@ -1,0 +1,58 @@
+{
+  "name": "claude-status",
+  "version": "0.1.0",
+  "description": "Real-time web dashboard for monitoring Claude Code sessions — tool calls, tokens, and tool-use authorization in one view.",
+  "type": "module",
+  "bin": {
+    "claude-status": "./bin/claude-status.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "dist-server",
+    "hooks",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build && tsc -p tsconfig.server.json && node --input-type=commonjs -e \"require('fs').writeFileSync('dist-server/package.json', JSON.stringify({type:'commonjs'}))\"",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build",
+    "start": "node bin/claude-status.js"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "anthropic",
+    "ai",
+    "monitor",
+    "dashboard",
+    "status"
+  ],
+  "author": "MarioLuLu7",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarioLuLu7/claude-status.git"
+  },
+  "homepage": "https://github.com/MarioLuLu7/claude-status#readme",
+  "bugs": {
+    "url": "https://github.com/MarioLuLu7/claude-status/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "vue": "^3.5.30",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/tsconfig": "^0.9.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1",
+    "vue-tsc": "^3.2.5"
+  }
+}

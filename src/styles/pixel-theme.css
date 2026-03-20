@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
+
+@font-face {
+  font-family: 'zpix';
+  src: url('../assets/zpix.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ══════════════════════════════════════════════
+   CSS VARIABLES — Retro Game Color Scheme
+   ══════════════════════════════════════════════ */
+:root {
+  /* ─── Backgrounds (deep space / game console CRT) ─── */
+  --px-bg0: #02020a;   /* near-black, deep space */
+  --px-bg1: #07071a;   /* dark navy — main panels */
+  --px-bg2: #0c0c26;   /* medium navy — card surfaces */
+  --px-bg3: #131336;   /* lighter navy — hover/accent areas */
+
+  /* ─── Game Accent Colors (vivid, saturated NES palette) ─── */
+  --px-green:  #00ff41;   /* phosphor green — primary action */
+  --px-cyan:   #00ccff;   /* electric blue — secondary / info */
+  --px-yellow: #ffee00;   /* gold — warnings / EXP */
+  --px-pink:   #ff00ff;   /* pure magenta — auth / alert */
+  --px-red:    #ff1144;   /* hot red — errors / danger */
+  --px-purple: #aa44ff;   /* violet — special */
+  --px-orange: #ff8800;   /* amber — bonus */
+  --px-blue:   #3399ff;   /* sky blue — links / focus */
+
+  /* ─── Text Hierarchy (CRT phosphor white) ─── */
+  --px-white:  #e4e4ff;   /* cool blue-white — primary text */
+  --px-gray:   #6464a8;   /* mid blue-gray — secondary text */
+  --px-dim:    #282855;   /* deep indigo — disabled / borders */
+  --px-border: #16163a;   /* darkest — panel dividers */
+
+  /* ─── Fonts ─── */
+  --px-font:      'Press Start 2P', 'zpix', monospace;   /* titles / icons */
+  --px-font-cn:   'zpix', monospace;                      /* Chinese pixel text */
+  --px-font-mono: 'VT323', 'zpix', monospace;             /* body / details */
+
+  /* ─── Pixel Drop Shadows (hard offset, no blur) ─── */
+  --px-drop-green:  3px 3px 0 #008822;
+  --px-drop-cyan:   3px 3px 0 #0077aa;
+  --px-drop-yellow: 3px 3px 0 #998800;
+  --px-drop-red:    3px 3px 0 #880022;
+  --px-drop-dim:    3px 3px 0 #080820;
+  --px-drop-pink:   3px 3px 0 #880088;
+
+  /* ─── Phosphor Glow (CRT bloom effect) ─── */
+  --px-glow-green:  0 0 10px rgba(0, 255, 65, 0.6),  0 0 20px rgba(0, 255, 65, 0.2);
+  --px-glow-cyan:   0 0 10px rgba(0, 204, 255, 0.6),  0 0 20px rgba(0, 204, 255, 0.2);
+  --px-glow-yellow: 0 0 10px rgba(255, 238, 0, 0.6),  0 0 20px rgba(255, 238, 0, 0.2);
+  --px-glow-red:    0 0 10px rgba(255, 17, 68, 0.6),   0 0 20px rgba(255, 17, 68, 0.2);
+  --px-glow-pink:   0 0 10px rgba(255, 0, 255, 0.6),   0 0 20px rgba(255, 0, 255, 0.2);
+}
+
+/* ══════════════════════════════════════════════
+   RESET & BASE
+   ══════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+  border-radius: 0 !important;   /* no rounded corners in pixel art */
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--px-font);
+  font-size: 12px;
+  background: var(--px-bg0);
+  color: var(--px-white);
+  line-height: 1.8;
+}
+
+/* ══════════════════════════════════════════════
+   BACKGROUNDS
+   ══════════════════════════════════════════════ */
+
+/* Pixel grid texture — game tile map style (fine + coarse grid) */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+    linear-gradient(rgba(0, 255, 65, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.015) 1px, transparent 1px);
+  background-size: 16px 16px, 16px 16px, 96px 96px, 96px 96px;
+}
+
+/* Dithered noise overlay (optional use) */
+.px-dither {
+  background-image:
+    radial-gradient(circle, rgba(0,255,65,0.06) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+/* ══════════════════════════════════════════════
+   PIXEL BORDERS
+   ══════════════════════════════════════════════ */
+
+.px-border-green  { border: 2px solid var(--px-green);  box-shadow: var(--px-drop-green); }
+.px-border-cyan   { border: 2px solid var(--px-cyan);   box-shadow: var(--px-drop-cyan); }
+.px-border-yellow { border: 2px solid var(--px-yellow); box-shadow: var(--px-drop-yellow); }
+.px-border-red    { border: 2px solid var(--px-red);    box-shadow: var(--px-drop-red); }
+
+/* Classic pixel window (double-border shadow trick) */
+.px-window {
+  border: 3px solid var(--px-green);
+  box-shadow:
+    4px 4px 0 var(--px-bg0),
+    6px 6px 0 var(--px-green);
+  background: var(--px-bg1);
+}
+
+/* ══════════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track {
+  background: var(--px-bg0);
+  border-left: 2px solid var(--px-border);
+}
+::-webkit-scrollbar-thumb { background: var(--px-dim); }
+::-webkit-scrollbar-thumb:hover { background: var(--px-green); }
+
+/* ══════════════════════════════════════════════
+   PIXEL BUTTON
+   ══════════════════════════════════════════════ */
+
+.px-btn {
+  padding: 6px 14px;
+  background: var(--px-bg2);
+  border: 2px solid var(--px-green);
+  color: var(--px-green);
+  font-family: var(--px-font);
+  font-size: 8px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: var(--px-drop-green);
+  transition: transform 0.05s steps(1), box-shadow 0.05s steps(1), background 0.05s steps(1);
+  user-select: none;
+  text-transform: uppercase;
+}
+.px-btn:hover {
+  background: var(--px-green);
+  color: var(--px-bg0);
+  box-shadow: var(--px-drop-green);
+}
+.px-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+.px-btn:focus-visible {
+  outline: 2px solid var(--px-cyan);
+  outline-offset: 2px;
+}
+
+/* ─── Button color variants ─── */
+.px-btn.cyan   { border-color: var(--px-cyan);   color: var(--px-cyan);   box-shadow: var(--px-drop-cyan); }
+.px-btn.cyan:hover   { background: var(--px-cyan); color: var(--px-bg0); }
+.px-btn.yellow { border-color: var(--px-yellow); color: var(--px-yellow); box-shadow: var(--px-drop-yellow); }
+.px-btn.yellow:hover { background: var(--px-yellow); color: var(--px-bg0); }
+.px-btn.red    { border-color: var(--px-red);    color: var(--px-red);    box-shadow: var(--px-drop-red); }
+.px-btn.red:hover    { background: var(--px-red); color: var(--px-bg0); }
+
+/* ══════════════════════════════════════════════
+   PIXEL SELECT
+   ══════════════════════════════════════════════ */
+
+.px-select {
+  background: var(--px-bg0);
+  border: 2px solid var(--px-yellow);
+  color: var(--px-white);
+  font-family: var(--px-font);
+  font-size: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+  outline: none;
+}
+.px-select:focus { border-color: var(--px-cyan); }
+
+/* ══════════════════════════════════════════════
+   PIXEL INPUT
+   ══════════════════════════════════════════════ */
+
+.px-input {
+  background: var(--px-bg0);
+  border: 2px solid var(--px-dim);
+  color: var(--px-green);
+  font-family: var(--px-font);
+  font-size: 9px;
+  padding: 4px 8px;
+  outline: none;
+  width: 100%;
+}
+.px-input:focus { border-color: var(--px-cyan); box-shadow: var(--px-glow-cyan); }
+
+/* ══════════════════════════════════════════════
+   PANEL TITLE BAR
+   ══════════════════════════════════════════════ */
+
+.panel-title {
+  padding: 6px 10px;
+  background: var(--px-bg2);
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--px-border);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   BADGE
+   ══════════════════════════════════════════════ */
+
+.badge {
+  display: inline-block;
+  padding: 1px 4px;
+  font-size: 7px;
+  line-height: 1.4;
+  font-family: var(--px-font);
+}
+
+/* ══════════════════════════════════════════════
+   MISC UTILITIES
+   ══════════════════════════════════════════════ */
+
+.text-green  { color: var(--px-green); }
+.text-cyan   { color: var(--px-cyan); }
+.text-yellow { color: var(--px-yellow); }
+.text-red    { color: var(--px-red); }
+.text-dim    { color: var(--px-dim); }
+.text-gray   { color: var(--px-gray); }
+
+.glow-green  { text-shadow: var(--px-glow-green); }
+.glow-cyan   { text-shadow: var(--px-glow-cyan); }
+.glow-yellow { text-shadow: var(--px-glow-yellow); }
