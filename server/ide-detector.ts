@@ -93,12 +93,20 @@ export function getOpenSessionIds(projectName: string): string[] {
 
   const results: { id: string; mtime: number }[] = [];
 
+  // 今天零点（本地时间），用于过滤当日之前的过期会话
+  const todayStartMs = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); })();
+
   for (const f of fs.readdirSync(projDir)) {
     if (!f.endsWith('.jsonl') || f.includes('subagent')) continue;
     const sessionId = f.replace('.jsonl', '');
     const jsonlPath = path.join(projDir, f);
     const jsonlStat = fs.statSync(jsonlPath);
-    const histDir   = path.join(HISTORY_DIR, sessionId);
+
+    // JSONL 最后写入时间 = 会话实际最后活跃时间
+    // 早于今天零点的会话不再返回（避免初始化时展示大量过期等待会话）
+    if (jsonlStat.mtimeMs < todayStartMs) continue;
+
+    const histDir = path.join(HISTORY_DIR, sessionId);
 
     let mtime = 0;
 

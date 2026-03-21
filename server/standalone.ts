@@ -9,8 +9,8 @@ import { injectSettings, restoreSettings } from './settings-manager';
 const pkgRoot = path.resolve(__dirname, '..');
 const distDir = path.join(pkgRoot, 'dist');
 
-const UI_PORT = parseInt(process.env.CLAUDE_STATUS_UI_PORT ?? '3000', 10);
-const WS_PORT = parseInt(process.env.CLAUDE_STATUS_WS_PORT ?? '3001', 10);
+const UI_PORT = parseInt(process.env.CLAUDE_PANEL_UI_PORT ?? '3000', 10);
+const WS_PORT = parseInt(process.env.CLAUDE_PANEL_WS_PORT ?? '3001', 10);
 
 const MIME: Record<string, string> = {
   '.html':  'text/html; charset=utf-8',

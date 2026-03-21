@@ -106,8 +106,12 @@ export function useWebSocket() {
           for (const pane of panes.value) {
             const last = pane.items[pane.items.length - 1];
             const collapseMs = settings.value.collapseDelay * 1000;
-            if (last?.level === 'done' && collapseMs > 0 && now - new Date(last.timestamp).getTime() > collapseMs) {
-              // 最后一条是"已完成"且超过 30s → 直接折叠到通知栏
+            const isOld = collapseMs > 0 && last && now - new Date(last.timestamp).getTime() > collapseMs;
+            if (last?.level === 'done' && isOld) {
+              // 最后一条是"已完成"且超过折叠延迟 → 直接折叠到通知栏
+              upsertNotification(pane.key, pane.displayName, last.key, last.detail, last.timestamp);
+            } else if (last?.level === 'idle' && isOld) {
+              // 最后一条是"等待中"且超过折叠延迟 → 也折叠（避免初始化时展示大量旧的等待会话）
               upsertNotification(pane.key, pane.displayName, last.key, last.detail, last.timestamp);
             } else {
               initVisible.add(pane.key);
