@@ -1,13 +1,13 @@
-# Claude Panel
+# Claude Super Monitor
 
-[![npm version](https://img.shields.io/npm/v/claude-panel.svg)](https://www.npmjs.com/package/claude-panel)
-[![GitHub stars](https://img.shields.io/github/stars/MarioLuLu7/claude-panel)](https://github.com/MarioLuLu7/claude-panel)
+[![npm version](https://img.shields.io/npm/v/claude-super-monitor.svg)](https://www.npmjs.com/package/claude-super-monitor)
+[![GitHub stars](https://img.shields.io/github/stars/MarioLuLu7/claude-super-monitor)](https://github.com/MarioLuLu7/claude-super-monitor)
 
 > 实时监控 Claude Code 会话的 Web 仪表盘 — 工具调用、Token 估算、授权确认，一屏掌握。
 
 A real-time web dashboard for monitoring Claude Code sessions — track tool calls, estimate token usage, and authorize tools through a visual interface.
 
-![Claude Panel Screenshot](https://raw.githubusercontent.com/MarioLuLu7/claude-panel/main/screenshot.png)
+![Claude Super Monitor Screenshot](https://raw.githubusercontent.com/MarioLuLu7/claude-super-monitor/main/screenshot.png)
 
 ## Features
 
@@ -24,7 +24,7 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 ## Installation
 
 ```bash
-npm install -g claude-panel
+npm install -g claude-super-monitor
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ npm install -g claude-panel
 After installation, simply run:
 
 ```bash
-claude-panel
+claude-super-monitor
 ```
 
 The dashboard will:
@@ -52,16 +52,16 @@ The dashboard will:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CLAUDE_PANEL_UI_PORT` | `3000` | HTTP server port for the dashboard |
-| `CLAUDE_PANEL_WS_PORT` | `3001` | WebSocket server port |
+| `CLAUDE_SUPER_MONITOR_UI_PORT` | `3000` | HTTP server port for the dashboard |
+| `CLAUDE_SUPER_MONITOR_WS_PORT` | `3001` | WebSocket server port |
 
 ```bash
-CLAUDE_PANEL_UI_PORT=8080 claude-panel
+CLAUDE_SUPER_MONITOR_UI_PORT=8080 claude-super-monitor
 ```
 
 ## How It Works
 
-Claude Panel reads Claude Code's session files from `~/.claude/projects/` and watches for real-time updates. It automatically detects:
+Claude Super Monitor reads Claude Code's session files from `~/.claude/projects/` and watches for real-time updates. It automatically detects:
 
 - Active VSCode windows (via lock files)
 - Current Claude Code sessions
@@ -79,7 +79,7 @@ These changes are automatically reverted when you stop the server.
 
 ## Tool Authorization (Optional)
 
-Claude Status can intercept tool calls and ask for your approval before Claude executes them:
+Claude Super Monitor can intercept tool calls and ask for your approval before Claude executes them:
 
 1. Start `claude-panel`
 2. The tool automatically configures the hook in Claude's settings
@@ -94,8 +94,8 @@ The hook script uses PowerShell on Windows and times out after 60 seconds (defau
 
 ```bash
 # Clone the repo
-git clone https://github.com/MarioLuLu7/claude-panel.git
-cd claude-panel
+git clone https://github.com/MarioLuLu7/claude-super-monitor.git
+cd claude-super-monitor
 
 # Install dependencies
 npm install

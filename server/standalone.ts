@@ -9,8 +9,8 @@ import { injectSettings, restoreSettings } from './settings-manager';
 const pkgRoot = path.resolve(__dirname, '..');
 const distDir = path.join(pkgRoot, 'dist');
 
-const UI_PORT = parseInt(process.env.CLAUDE_PANEL_UI_PORT ?? '3000', 10);
-const WS_PORT = parseInt(process.env.CLAUDE_PANEL_WS_PORT ?? '3001', 10);
+const UI_PORT = parseInt(process.env.CLAUDE_SUPER_MONITOR_UI_PORT ?? '3000', 10);
+const WS_PORT = parseInt(process.env.CLAUDE_SUPER_MONITOR_WS_PORT ?? '3001', 10);
 
 const MIME: Record<string, string> = {
   '.html':  'text/html; charset=utf-8',
@@ -57,7 +57,7 @@ function serveStatic(req: http.IncomingMessage, res: http.ServerResponse) {
 
 function main() {
   if (!fs.existsSync(path.join(distDir, 'index.html'))) {
-    console.error('\x1b[31m[claude-panel] Frontend not built. Run: npm run build\x1b[0m');
+    console.error('\x1b[31m[claude-super-monitor] Frontend not built. Run: npm run build\x1b[0m');
     process.exit(1);
   }
 
@@ -69,8 +69,8 @@ function main() {
   const uiServer = http.createServer(serveStatic);
   uiServer.listen(UI_PORT, () => {
     const url = `http://localhost:${UI_PORT}`;
-    console.log(`\x1b[36m[claude-panel] Open: ${url}\x1b[0m`);
-    console.log('\x1b[33m[claude-panel] Press Ctrl+C to stop\x1b[0m');
+    console.log(`\x1b[36m[claude-super-monitor] Open: ${url}\x1b[0m`);
+    console.log('\x1b[33m[claude-super-monitor] Press Ctrl+C to stop\x1b[0m');
     openBrowser(url);
   });
 
