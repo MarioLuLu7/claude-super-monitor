@@ -2,12 +2,25 @@
 
 [![npm version](https://img.shields.io/npm/v/claude-super-monitor.svg)](https://www.npmjs.com/package/claude-super-monitor)
 [![GitHub stars](https://img.shields.io/github/stars/MarioLuLu7/claude-super-monitor)](https://github.com/MarioLuLu7/claude-super-monitor)
+[![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)](https://github.com/MarioLuLu7/claude-super-monitor)
+[![IDE](https://img.shields.io/badge/IDE-VSCode-blue.svg)](https://github.com/MarioLuLu7/claude-super-monitor)
 
 > 实时监控 Claude Code 会话的 Web 仪表盘 — 工具调用、Token 估算、授权确认，一屏掌握。
 
 A real-time web dashboard for monitoring Claude Code sessions — track tool calls, estimate token usage, and authorize tools through a visual interface.
 
 ![Claude Super Monitor Screenshot](https://raw.githubusercontent.com/MarioLuLu7/claude-super-monitor/main/screenshot.png)
+
+## ⚠️ Platform Requirements
+
+**Current Limitations:**
+- ✅ **Windows** - Fully supported
+- ❌ **macOS** - Not yet supported
+- ❌ **Linux** - Not yet supported
+- ✅ **VSCode Claude Extension** - Required
+- ❌ **Claude Terminal (CLI)** - Not yet supported
+
+> **Note**: This tool currently only works with the Claude Code extension for VSCode on Windows. Support for macOS, Linux, and the terminal-based Claude CLI is planned.
 
 ## Features
 
@@ -20,6 +33,7 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 - 🔔 **Notification Bar** - Completed sessions collapse into notifications; click to restore
 - 🎨 **Bilingual UI** - Chinese and English interface support
 - ⚙️ **Configurable** - Adjust auto-approval, collapse delay, language, and more
+- 🔄 **Auto-update** - Built-in command to update to the latest version
 
 ## Installation
 
@@ -42,10 +56,18 @@ The dashboard will:
 2. WebSocket server on port 3001
 3. Auto-open your browser
 
+### Update to Latest Version
+
+```bash
+claude-super-monitor --update
+# or
+claude-super-monitor -u
+```
+
 ### Requirements
 
-- **Claude Code** installed and running in VSCode
-- **Windows, macOS, or Linux**
+- **VSCode** with Claude Code extension installed and running
+- **Windows** (Windows 10/11 recommended)
 - **Node.js ≥ 18**
 
 ### Environment Variables
@@ -56,8 +78,23 @@ The dashboard will:
 | `CLAUDE_SUPER_MONITOR_WS_PORT` | `3001` | WebSocket server port |
 
 ```bash
-CLAUDE_SUPER_MONITOR_UI_PORT=8080 claude-super-monitor
+# Windows PowerShell
+$env:CLAUDE_SUPER_MONITOR_UI_PORT=8080; claude-super-monitor
+
+# Windows CMD
+set CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
 ```
+
+## Roadmap
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Windows Support | ✅ Complete | Full support for Windows 10/11 |
+| macOS Support | 🚧 Planned | macOS compatibility |
+| Linux Support | 🚧 Planned | Linux compatibility |
+| VSCode Extension | ✅ Complete | Works with VSCode Claude extension |
+| Claude Terminal CLI | 🚧 Planned | Support for terminal-based Claude Code |
+| Auto-update | ✅ Complete | Built-in update command |
 
 ## How It Works
 
@@ -70,7 +107,7 @@ Claude Super Monitor reads Claude Code's session files from `~/.claude/projects/
 
 ### Automatic Settings Injection
 
-When you start `claude-panel`, it automatically:
+When you start `claude-super-monitor`, it automatically:
 
 1. Adds wildcard permissions to `~/.claude/settings.json` (skips VSCode popup confirmations)
 2. Configures the PreToolUse hook for tool authorization (optional)
@@ -81,7 +118,7 @@ These changes are automatically reverted when you stop the server.
 
 Claude Super Monitor can intercept tool calls and ask for your approval before Claude executes them:
 
-1. Start `claude-panel`
+1. Start `claude-super-monitor`
 2. The tool automatically configures the hook in Claude's settings
 3. When Claude attempts to run a Bash command, write a file, or edit code:
    - A dialog appears in the Web UI
@@ -139,9 +176,10 @@ Run `npm run build` first to build the frontend.
 
 ### No sessions showing
 
-- Make sure Claude Code is running in VSCode
+- Make sure Claude Code extension is running in VSCode
 - Check that `~/.claude/projects/` exists
 - Verify VSCode window is active (check lock files in `~/.claude/ide/`)
+- **Note**: This tool only works with VSCode Claude extension on Windows
 
 ### WebSocket connection issues
 

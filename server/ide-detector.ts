@@ -115,8 +115,8 @@ export function getOpenSessionIds(projectName: string): string[] {
       mtime = fs.statSync(histDir).mtimeMs;
     } else {
       // 没有 file-history（新建会话尚未做过文件操作）：
-      // 用 JSONL 文件的创建时间判断
-      mtime = jsonlStat.birthtimeMs || jsonlStat.mtimeMs;
+      // 用 JSONL 文件的修改时间判断（mtime 会在有新消息时刷新）
+      mtime = jsonlStat.mtimeMs;
     }
 
     if (mtime >= vscodeOpenedAtMs) {
