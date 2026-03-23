@@ -41,4 +41,12 @@ export const en: Record<I18nKey, string> = {
   settings_show_thinking_desc:  'Show thinking content in history when in thinking state',
   settings_collapse_delay_desc: 'Seconds before auto-collapsing completed sessions (0 = never)',
   settings_save:                'Save & Close',
+
+  // ── Game mode ──
+  switch_to_game:      '🎮 Game Mode',
+  switch_to_normal:    '📊 Normal Mode',
+  loading_game:        'Loading Game',
+  game_room:           'Game Room',
+  game:                'GAME',
+  normal:              'NORMAL',
 };

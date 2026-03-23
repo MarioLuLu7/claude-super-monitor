@@ -53,8 +53,8 @@ claude-super-monitor
 ```
 
 The dashboard will:
-1. Start on `http://localhost:3000`
-2. WebSocket server on port 3001
+1. Start on `http://localhost:5999`
+2. WebSocket server on port 5998
 3. Auto-open your browser
 
 ### Update to Latest Version
@@ -75,8 +75,8 @@ claude-super-monitor -u
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CLAUDE_SUPER_MONITOR_UI_PORT` | `3000` | HTTP server port for the dashboard |
-| `CLAUDE_SUPER_MONITOR_WS_PORT` | `3001` | WebSocket server port |
+| `CLAUDE_SUPER_MONITOR_UI_PORT` | `5999` | HTTP server port for the dashboard |
+| `CLAUDE_SUPER_MONITOR_WS_PORT` | `5998` | WebSocket server port |
 
 ```bash
 # Windows PowerShell
@@ -169,14 +169,14 @@ npm start
                                                                    │
                               ┌─────────────────┐                  │
                               │   WebSocket     │ ◀────────────────┘
-                              │   Server (3001) │
+                              │   Server (5998) │
                               │   /api/hook     │
                               └────────┬────────┘
                                        │
                               ┌────────▼────────┐
                               │   Vue 3 + Vite  │
                               │   Dashboard     │
-                              │   localhost:3000│
+                              │   localhost:5999│
                               └─────────────────┘
 ```
 
@@ -195,7 +195,7 @@ Run `npm run build` first to build the frontend.
 
 ### WebSocket connection issues
 
-- Ensure port 3001 is not in use by another application
+- Ensure port 5998 is not in use by another application
 - Check browser console for connection errors
 - Try refreshing the page
 

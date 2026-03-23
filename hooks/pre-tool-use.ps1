@@ -4,7 +4,7 @@
 
 param()
 
-$API = "http://localhost:3001/api/hook"
+$API = "http://localhost:5998/api/hook"
 $TIMEOUT_SEC = 65   # 略大于服务端 60s 超时
 
 # 设置 UTF-8 编码，确保中文不乱码

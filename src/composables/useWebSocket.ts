@@ -83,7 +83,7 @@ export function useWebSocket() {
 
   // ── WebSocket 连接 ────────────────────────────────────────────────────────
   function connect() {
-    const socket = new WebSocket('ws://localhost:3001');
+    const socket = new WebSocket('ws://localhost:5998');
 
     socket.onopen = () => { connected.value = true; };
 

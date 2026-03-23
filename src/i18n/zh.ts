@@ -39,6 +39,14 @@ export const zh = {
   settings_show_thinking_desc:  '思考中状态是否在历史记录里展示思考内容',
   settings_collapse_delay_desc: '会话完成后多久自动折叠（0 = 不自动关闭）',
   settings_save:                '保存并关闭',
+
+  // ── 游戏模式 ──
+  switch_to_game:      '🎮 游戏模式',
+  switch_to_normal:    '📊 普通模式',
+  loading_game:        '加载游戏',
+  game_room:           '游戏房间',
+  game:                '游戏',
+  normal:              '普通',
 } as const;
 
 export type I18nKey = keyof typeof zh;

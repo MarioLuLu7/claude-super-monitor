@@ -12,6 +12,16 @@
       </div>
 
       <div class="hud-right">
+        <!-- 游戏模式切换按钮 -->
+        <button
+          class="hud-mode"
+          :class="{ 'game-active': isGameMode }"
+          @click="toggleGameMode"
+          :title="isGameMode ? t('switch_to_normal') : t('switch_to_game')"
+        >
+          <span class="mode-icon">{{ isGameMode ? '📊' : '🎮' }}</span>
+          <span class="mode-text">{{ isGameMode ? t('normal') : t('game') }}</span>
+        </button>
         <span :class="['led', connected ? 'online' : 'connecting']"></span>
         <span :class="connected ? 'hud-live' : 'hud-off'">{{ connected ? 'LIVE' : 'OFF' }}</span>
         <span class="hud-clock">{{ clock }}</span>
@@ -40,7 +50,20 @@
 
     <!-- ══ 分屏网格 ════════════════════════════════ -->
     <div v-else-if="visiblePanes.length" class="session-grid" :style="gridStyle">
+      <!-- 全局游戏模式：所有会话显示为游戏模式 -->
+      <GamePanel
+        v-if="isGameMode"
+        v-for="pane in visiblePanes"
+        :key="pane.key"
+        :items="pane.items"
+        :display-name="pane.displayName"
+        :original-path="pane.originalPath"
+        :session-title="pane.sessionTitle"
+        :tokens="pane.tokens"
+      />
+      <!-- 普通模式 -->
       <StatusPanel
+        v-else
         v-for="pane in visiblePanes"
         :key="pane.key"
         :items="pane.items"
@@ -84,6 +107,7 @@ import { useSettings } from './composables/useSettings';
 import { useI18n } from './composables/useI18n';
 import type { I18nKey } from './i18n/zh';
 import StatusPanel from './components/StatusPanel.vue';
+import GamePanel from './components/GamePanel.vue';
 import AuthDialog from './components/AuthDialog.vue';
 import UserQuestionDialog from './components/UserQuestionDialog.vue';
 import NotificationBar from './components/NotificationBar.vue';
@@ -94,6 +118,14 @@ const { settings } = useSettings();
 const { t: tComputed } = useI18n();
 const t = (key: I18nKey) => tComputed.value(key);
 const showSettings = ref(false);
+
+// 全局游戏模式状态
+const isGameMode = ref(false);
+
+// 切换游戏模式
+function toggleGameMode() {
+  isGameMode.value = !isGameMode.value;
+}
 
 const visiblePanes = computed(() => panes.value.filter(p => visibleKeys.value.has(p.key)));
 
@@ -201,6 +233,57 @@ html, body, #app { height: 100%; margin: 0; padding: 0; }
 }
 .hud-cfg:hover  { background: var(--px-cyan); color: var(--px-bg0); }
 .hud-cfg:active { transform: translate(2px, 2px); box-shadow: none; }
+
+/* ══ Game Mode Toggle Button ═══════════════════════════ */
+.hud-mode {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--px-bg2);
+  border: 2px solid var(--px-pink);
+  color: var(--px-pink);
+  font-family: var(--px-font);
+  font-size: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  height: 24px;
+  box-shadow: 2px 2px 0 #660044;
+  transition: all 0.1s steps(1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hud-mode:hover {
+  background: var(--px-pink);
+  color: var(--px-bg0);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #660044;
+}
+
+.hud-mode:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.hud-mode.game-active {
+  border-color: var(--px-green);
+  color: var(--px-green);
+  box-shadow: 2px 2px 0 #004400;
+}
+
+.hud-mode.game-active:hover {
+  background: var(--px-green);
+  color: var(--px-bg0);
+  box-shadow: 3px 3px 0 #004400;
+}
+
+.mode-icon {
+  font-size: 12px;
+}
+
+.mode-text {
+  white-space: nowrap;
+}
 
 /* ══ EMPTY / GAME START SCREEN ════════════════════════ */
 .empty-screen {

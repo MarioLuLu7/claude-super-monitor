@@ -1,6 +1,6 @@
 {
   "name": "claude-super-monitor",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Real-time web dashboard for monitoring Claude Code sessions — tool calls, tokens, and tool-use authorization in one view.",
   "type": "module",
   "bin": {
@@ -43,6 +43,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "pixi.js": "^7.4.3",
     "vue": "^3.5.30",
     "ws": "^8.19.0"
   },
