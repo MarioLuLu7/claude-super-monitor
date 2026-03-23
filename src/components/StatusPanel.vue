@@ -336,7 +336,7 @@ function fmtTime(ts: string) {
 .stat-ts {
   font-family: var(--px-font);
   font-size: 7px;
-  color: var(--px-dim);
+  color: var(--px-gray);
   padding: 6px 8px;
   align-self: flex-start;
   flex-shrink: 0;
@@ -369,7 +369,7 @@ function fmtTime(ts: string) {
 /* Grid-aligned game event log rows */
 .log-row {
   display: grid;
-  grid-template-columns: 14px 52px minmax(60px, max-content) 1fr;
+  grid-template-columns: 14px 64px minmax(60px, max-content) 1fr;
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
@@ -380,8 +380,8 @@ function fmtTime(ts: string) {
 }
 .log-row:hover { background: rgba(255,255,255,0.03); }
 
-.row-sym { font-family: var(--px-font); font-size: 8px; text-align: center; color: var(--px-dim); }
-.row-ts  { font-family: var(--px-font); font-size: 7px; color: var(--px-dim); letter-spacing: 0.5px; white-space: nowrap; }
+.row-sym { font-family: var(--px-font); font-size: 8px; text-align: center; color: var(--px-gray); }
+.row-ts  { font-family: var(--px-font); font-size: 7px; color: var(--px-gray); letter-spacing: 0.5px; white-space: nowrap; }
 .row-lbl { color: var(--px-white); font-size: 13px; white-space: nowrap; }
 .row-det { color: var(--px-gray); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
 

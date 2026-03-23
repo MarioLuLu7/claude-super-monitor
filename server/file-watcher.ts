@@ -26,16 +26,20 @@ export interface Session {
 
 export type StatusLevel = 'thinking' | 'working' | 'done' | 'auth' | 'error' | 'idle';
 
+export interface QuestionOption { label: string; description?: string }
+export interface AskQuestion { question: string; header: string; options: QuestionOption[]; multiSelect?: boolean }
+
 export interface StatusItem {
   id: string;
   timestamp: string;
   level: StatusLevel;
   key: string;    // i18n translation key
   detail?: string;
+  questionData?: { toolUseId: string; questions: AskQuestion[] };
 }
 
 // ─── 工具名 → 状态映射 ────────────────────────────────────────────────────────
-const TOOL_MAP: Record<string, (input: Record<string, unknown>) => { key: string; detail?: string; level: StatusLevel }> = {
+const TOOL_MAP: Record<string, (input: Record<string, unknown>) => { key: string; detail?: string; level: StatusLevel; questionData?: StatusItem['questionData'] }> = {
   Bash: (i) => {
     const desc = String(i.description ?? '').trim();
     const cmd  = String(i.command ?? '').split('\n')[0].slice(0, 80);
@@ -55,12 +59,12 @@ const TOOL_MAP: Record<string, (input: Record<string, unknown>) => { key: string
   ExitPlanMode:    () => ({ level: 'working', key: 'tool_exit_plan' }),
   EnterPlanMode:   () => ({ level: 'working', key: 'tool_enter_plan' }),
   AskUserQuestion: (i) => {
-    const question = String(i.question ?? '').trim();
-    const options = Array.isArray(i.options)
-      ? (i.options as string[]).join(' / ')
-      : '';
-    const detail = options ? `${question}  [${options}]` : question;
-    return { level: 'auth', key: 'tool_ask_user', detail: detail.slice(0, 120) || undefined };
+    const questions = Array.isArray(i.questions) ? (i.questions as Array<Record<string, unknown>>) : [];
+    const first = questions[0];
+    const question = first ? String(first.question ?? '').trim() : '';
+    const opts = Array.isArray(first?.options) ? (first.options as Array<Record<string, unknown>>).map(o => String(o.label ?? '')).join(' / ') : '';
+    const detail = (opts ? `${question}  [${opts}]` : question).slice(0, 120) || undefined;
+    return { level: 'auth', key: 'tool_ask_user', detail };
   },
   NotebookEdit: (i) => ({ level: 'working', key: 'tool_notebook', detail: shortPath(String(i.notebook_path ?? '')) }),
 };
@@ -105,14 +109,34 @@ export function parseStatusItems(line: string): StatusItem[] {
             hasToolUse = true;
             const toolName = String(c.name ?? '');
             const input = (c.input ?? {}) as Record<string, unknown>;
+            const toolUseId = String(c.id ?? `${ts}-${toolName}`);
             const mapper = TOOL_MAP[toolName];
             const mapped = mapper
               ? mapper(input)
               : { level: 'working' as StatusLevel, key: 'tool_call', detail: toolName };
+            // For AskUserQuestion, attach full question data
+            let questionData: StatusItem['questionData'] = mapped.questionData;
+            if (toolName === 'AskUserQuestion' && Array.isArray(input.questions)) {
+              questionData = {
+                toolUseId,
+                questions: (input.questions as Array<Record<string, unknown>>).map(q => ({
+                  question: String(q.question ?? ''),
+                  header: String(q.header ?? ''),
+                  multiSelect: Boolean(q.multiSelect ?? false),
+                  options: Array.isArray(q.options)
+                    ? (q.options as Array<Record<string, unknown>>).map(o => ({
+                        label: String(o.label ?? ''),
+                        description: o.description !== undefined ? String(o.description) : undefined,
+                      }))
+                    : [],
+                })),
+              };
+            }
             items.push({
-              id: String(c.id ?? `${ts}-${toolName}`),
+              id: toolUseId,
               timestamp: ts,
               ...mapped,
+              ...(questionData ? { questionData } : {}),
             });
           } else if (c.type === 'text' && String(c.text ?? '').trim()) {
             hasText = true;

@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue';
-import type { SessionPane, AuthRequest, WSOutgoing, Notification } from '../types';
+import type { SessionPane, AuthRequest, WSOutgoing, Notification, UserQuestionRequest } from '../types';
 import { useSettings } from './useSettings';
 
 // 有执行动作的 level（立即显示面板）
@@ -7,11 +7,12 @@ const ACTIVE_LEVELS = new Set(['thinking', 'working', 'auth', 'error']);
 
 export function useWebSocket() {
   const { settings } = useSettings();
-  const connected    = ref(false);
-  const panes        = ref<SessionPane[]>([]);
-  const pendingAuth  = ref<AuthRequest | null>(null);
-  const visibleKeys  = ref<Set<string>>(new Set());
-  const notifications = ref<Notification[]>([]);
+  const connected      = ref(false);
+  const panes          = ref<SessionPane[]>([]);
+  const pendingAuth    = ref<AuthRequest | null>(null);
+  const pendingQuestion = ref<UserQuestionRequest | null>(null);
+  const visibleKeys    = ref<Set<string>>(new Set());
+  const notifications  = ref<Notification[]>([]);
 
   const idleTimers = new Map<string, ReturnType<typeof setTimeout>>();
   let ws: WebSocket | null = null;
@@ -190,6 +191,10 @@ export function useWebSocket() {
         case 'authorizationHandled':
           if (pendingAuth.value?.requestId === data.requestId) pendingAuth.value = null;
           break;
+
+        case 'userQuestionRequired':
+          if (data.userQuestion) pendingQuestion.value = data.userQuestion;
+          break;
       }
     };
 
@@ -206,6 +211,15 @@ export function useWebSocket() {
     ws?.send(JSON.stringify({ type: 'authorizeResponse', requestId, approved }));
   }
 
+  function dismissQuestion() {
+    pendingQuestion.value = null;
+  }
+
+  function answerQuestion(requestId: string, answers: Record<string, string[]>) {
+    pendingQuestion.value = null;
+    ws?.send(JSON.stringify({ type: 'questionAnswer', requestId, answers }));
+  }
+
   onMounted(connect);
   onUnmounted(() => {
     if (reconnectTimer) clearTimeout(reconnectTimer);
@@ -213,5 +227,5 @@ export function useWebSocket() {
     ws?.close();
   });
 
-  return { connected, panes, visibleKeys, notifications, pendingAuth, authorizeRespond, restoreSession, collapseSession };
+  return { connected, panes, visibleKeys, notifications, pendingAuth, pendingQuestion, authorizeRespond, dismissQuestion, answerQuestion, restoreSession, collapseSession };
 }

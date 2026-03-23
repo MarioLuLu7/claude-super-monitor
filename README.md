@@ -28,6 +28,7 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 - 🛠️ **Tool Call Tracking** - See which tools Claude is using: Bash, Write, Edit, WebFetch, Search, and more
 - 📊 **Token Estimation** - Rough token count estimation based on session file size
 - 🔐 **Tool Authorization** - Grant or deny permission requests directly in the Web UI (optional hook)
+- ❓ **AskUserQuestion Support** - Answer Claude's questions interactively through the dashboard
 - 🌐 **Multi-session View** - Monitor multiple Claude Code sessions side-by-side
 - 📝 **Session Titles** - First user message automatically extracted as session title
 - 🔔 **Notification Bar** - Completed sessions collapse into notifications; click to restore
@@ -126,6 +127,17 @@ Claude Super Monitor can intercept tool calls and ask for your approval before C
    - Claude continues or cancels accordingly
 
 The hook script uses PowerShell on Windows and times out after 60 seconds (defaults to deny).
+
+### AskUserQuestion Support
+
+When Claude uses `AskUserQuestion` to ask you something:
+
+1. The question appears as a dialog in the Web UI
+2. Select one or more options (or type custom answer)
+3. Submit to continue the conversation
+4. Answers are sent back to Claude automatically
+
+This allows you to handle interactive prompts from Claude directly in the dashboard without switching to VSCode.
 
 ## Development
 

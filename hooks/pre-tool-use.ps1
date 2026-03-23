@@ -27,9 +27,29 @@ try {
         -ErrorAction Stop
 
     if ($response.decision -eq "approve") {
+        # 放行
         exit 0
+    } elseif ($response.decision -eq "block" -and $response.reason) {
+        # AskUserQuestion 答案：decision 明确为 "block" 且有 reason
+        # 将非 ASCII 字符转为 \uXXXX 转义，输出纯 ASCII JSON 给 Claude Code
+        $reason = [string]$response.reason
+        $sb = New-Object System.Text.StringBuilder
+        $null = $sb.Append('"')
+        foreach ($c in $reason.ToCharArray()) {
+            $code = [int]$c
+            if    ($c -eq '"')      { $null = $sb.Append('\"') }
+            elseif ($c -eq '\')    { $null = $sb.Append('\\') }
+            elseif ($code -eq 10)  { $null = $sb.Append('\n') }
+            elseif ($code -eq 13)  { $null = $sb.Append('\r') }
+            elseif ($code -gt 127) { $null = $sb.Append(('\u{0:x4}' -f $code)) }
+            else                   { $null = $sb.Append($c) }
+        }
+        $null = $sb.Append('"')
+        $output = '{"decision":"block","reason":' + $sb.ToString() + '}'
+        [Console]::Out.WriteLine($output)
+        exit 2
     } else {
-        # 写入 stderr，Claude 会显示给用户
+        # 普通拒绝（deny）或超时 deny → 写 stderr，退出 2
         [Console]::Error.WriteLine("[Monitor] Tool blocked by user via Web UI")
         exit 2
     }

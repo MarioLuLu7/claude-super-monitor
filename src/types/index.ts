@@ -20,6 +20,7 @@ export interface StatusItem {
   level: StatusLevel;
   key: string;    // i18n translation key
   detail?: string;
+  questionData?: { toolUseId: string; questions: AskQuestion[] };
 }
 
 export interface AuthRequest {
@@ -27,6 +28,25 @@ export interface AuthRequest {
   toolName: string;
   toolInput: Record<string, unknown>;
   summary: string;
+}
+
+export interface QuestionOption {
+  label: string;
+  description?: string;
+}
+
+export interface AskQuestion {
+  question: string;
+  header: string;
+  options: QuestionOption[];
+  multiSelect?: boolean;
+}
+
+export interface UserQuestionRequest {
+  requestId?: string;   // hook 流程中有值
+  sessionKey: string;
+  toolUseId: string;
+  questions: AskQuestion[];
 }
 
 // 多会话面板数据
@@ -55,6 +75,7 @@ export interface WSOutgoing {
     | 'sessionUpdate'
     | 'authorizationRequired'
     | 'authorizationHandled'
+    | 'userQuestionRequired'
     | 'error';
   // 全量会话列表
   sessions?: Array<{ key: string; displayName: string; originalPath: string; items?: StatusItem[]; sessionTitle?: string; tokens?: number }>;
@@ -69,4 +90,6 @@ export interface WSOutgoing {
   summary?: string;
   approved?: boolean;
   error?: string;
+  // 用户问题
+  userQuestion?: UserQuestionRequest;
 }

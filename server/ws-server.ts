@@ -3,11 +3,24 @@ import { WebSocketServer as WSS, WebSocket } from 'ws';
 import { FileWatcher } from './file-watcher';
 import { watchIdeDir, watchFileHistoryDir, watchProjectDir, getOpenSessionIds } from './ide-detector';
 
+/** 将对象序列化为纯 ASCII JSON（非 ASCII 字符转为 \uXXXX），避免 PowerShell 5.1 编码问题 */
+function asciiJson(obj: unknown): string {
+  return JSON.stringify(obj).replace(/[^\x00-\x7F]/g, c =>
+    `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`
+  );
+}
+
 // ── 消息类型 ──────────────────────────────────────────────────────────────────
 interface IncomingMsg {
-  type: 'authorizeResponse';
+  type: 'authorizeResponse' | 'questionAnswer';
   requestId?: string;
   approved?: boolean;
+  answers?: Record<string, string[]>;  // header → 已选 label 数组
+}
+
+interface PendingQuestion {
+  resolve: (answers: Record<string, string[]>) => void;
+  timer: ReturnType<typeof setTimeout>;
 }
 
 interface PendingAuth {
@@ -31,6 +44,7 @@ export class WebSocketServer {
   private fw = new FileWatcher();
   private clients = new Set<WebSocket>();
   private pendingAuths = new Map<string, PendingAuth>();
+  private pendingQuestions = new Map<string, PendingQuestion>();
 
   // 服务端统一管理活跃会话的 watcher
   private activeSessions = new Map<string, ActiveSession>(); // key → session
@@ -111,6 +125,17 @@ export class WebSocketServer {
           this.fw.watch(proj.name, sessionId, (item) => {
             const tokens = this.fw.getSessionTokens(proj.name, sessionId);
             this.broadcast({ type: 'sessionUpdate', key, item, tokens });
+            // 有问题数据 → 额外广播 userQuestionRequired
+            if (item.questionData) {
+              this.broadcast({
+                type: 'userQuestionRequired',
+                userQuestion: {
+                  sessionKey: key,
+                  toolUseId: item.questionData.toolUseId,
+                  questions: item.questionData.questions,
+                },
+              });
+            }
           });
         }
       }
@@ -172,6 +197,14 @@ export class WebSocketServer {
         this.broadcast({ type: 'authorizationHandled', requestId: msg.requestId, approved: msg.approved });
       }
     }
+    if (msg.type === 'questionAnswer' && msg.requestId !== undefined) {
+      const pending = this.pendingQuestions.get(msg.requestId);
+      if (pending) {
+        clearTimeout(pending.timer);
+        this.pendingQuestions.delete(msg.requestId);
+        pending.resolve(msg.answers ?? {});
+      }
+    }
   }
 
   // ── Hook API ───────────────────────────────────────────────────────────────
@@ -188,6 +221,54 @@ export class WebSocketServer {
       } catch { /* bad JSON */ }
 
       const requestId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+      // AskUserQuestion 走专门分支
+      if (toolName === 'AskUserQuestion') {
+        const rawQuestions = Array.isArray(toolInput.questions)
+          ? (toolInput.questions as Array<Record<string, unknown>>)
+          : [];
+        const questions = rawQuestions.map(q => ({
+          question: String(q.question ?? ''),
+          header: String(q.header ?? ''),
+          multiSelect: Boolean(q.multiSelect ?? false),
+          options: Array.isArray(q.options)
+            ? (q.options as Array<Record<string, unknown>>).map(o => ({
+                label: String(o.label ?? ''),
+                description: o.description !== undefined ? String(o.description) : undefined,
+              }))
+            : [],
+        }));
+
+        this.broadcast({
+          type: 'userQuestionRequired',
+          userQuestion: { requestId, sessionKey: '', toolUseId: requestId, questions },
+        });
+
+        const timer = setTimeout(() => {
+          if (!this.pendingQuestions.has(requestId)) return;
+          this.pendingQuestions.delete(requestId);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ decision: 'block', reason: 'No answer received (timeout)' }));
+        }, 120_000);  // 2 分钟超时
+
+        this.pendingQuestions.set(requestId, {
+          timer,
+          resolve: (answers) => {
+            // 将选择结果格式化为带 header 的清晰文本，让 Claude 明确匹配问题与答案
+            const lines = Object.entries(answers).map(([header, labels]) => {
+              const value = labels.length === 1 ? labels[0] : labels.join(', ');
+              return `[${header}] ${value}`;
+            });
+            const reason = lines.join('\n') || 'Other';
+            // 用纯 ASCII JSON（\uXXXX 转义非 ASCII），避免 PowerShell 5.1 编码问题
+            const body = asciiJson({ decision: 'block', reason });
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(body);
+          },
+        });
+        return;  // 不走下面的 authorizationRequired 流程
+      }
+
       this.broadcast({
         type: 'authorizationRequired', requestId, toolName, toolInput,
         summary: this.summarize(toolName, toolInput),

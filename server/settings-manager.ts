@@ -9,6 +9,7 @@ const SETTINGS_PATH = path.join(
 
 // 我们注入的标记，用于识别/清理
 const HOOK_MARKER = '__claude-monitor-hook__';
+const HOOK_MATCHER = 'Bash|Write|Edit|MultiEdit|AskUserQuestion';
 
 const WILDCARD_PERMISSIONS = [
   'Bash(*)',
@@ -54,16 +55,26 @@ export function injectSettings(pkgRoot = process.cwd()) {
     ? (hooks.PreToolUse as Array<Record<string, unknown>>)
     : [];
 
-  const alreadyInjected = preToolUse.some(
+  const existingIdx = preToolUse.findIndex(
     (h) => JSON.stringify(h).includes(HOOK_MARKER),
   );
 
-  if (!alreadyInjected) {
+  if (existingIdx === -1) {
+    // 首次注入
     preToolUse.unshift({
       _comment: HOOK_MARKER,
-      matcher: 'Bash|Write|Edit|MultiEdit',
+      matcher: HOOK_MATCHER,
       hooks: [{ type: 'command', command: getHookCommand(pkgRoot) }],
     });
+    hooks.PreToolUse = preToolUse;
+    settings.hooks = hooks;
+  } else if (preToolUse[existingIdx].matcher !== HOOK_MATCHER) {
+    // matcher 过期，更新
+    preToolUse[existingIdx] = {
+      ...preToolUse[existingIdx],
+      matcher: HOOK_MATCHER,
+      hooks: [{ type: 'command', command: getHookCommand(pkgRoot) }],
+    };
     hooks.PreToolUse = preToolUse;
     settings.hooks = hooks;
   }

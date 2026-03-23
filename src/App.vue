@@ -68,6 +68,11 @@
     </div>
 
     <AuthDialog :request="pendingAuth" :auto-approve="settings.autoApprove" @respond="authorizeRespond" />
+    <UserQuestionDialog
+      :request="pendingQuestion"
+      @answer="(rid, ans) => answerQuestion(rid, ans)"
+      @dismiss="dismissQuestion"
+    />
     <SettingsDialog v-model:show="showSettings" />
   </div>
 </template>
@@ -80,10 +85,11 @@ import { useI18n } from './composables/useI18n';
 import type { I18nKey } from './i18n/zh';
 import StatusPanel from './components/StatusPanel.vue';
 import AuthDialog from './components/AuthDialog.vue';
+import UserQuestionDialog from './components/UserQuestionDialog.vue';
 import NotificationBar from './components/NotificationBar.vue';
 import SettingsDialog from './components/SettingsDialog.vue';
 
-const { connected, panes, visibleKeys, notifications, pendingAuth, authorizeRespond, restoreSession, collapseSession } = useWebSocket();
+const { connected, panes, visibleKeys, notifications, pendingAuth, pendingQuestion, authorizeRespond, dismissQuestion, answerQuestion, restoreSession, collapseSession } = useWebSocket();
 const { settings } = useSettings();
 const { t: tComputed } = useI18n();
 const t = (key: I18nKey) => tComputed.value(key);
