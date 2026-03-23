@@ -14,7 +14,7 @@ function wsServerPlugin(): Plugin {
         // 注入白名单 + Hook
         injectSettings();
 
-        wsServer = new WebSocketServer(3001);
+        wsServer = new WebSocketServer(5998);
         wsServer.start();
 
         // Vite dev server 关闭时还原

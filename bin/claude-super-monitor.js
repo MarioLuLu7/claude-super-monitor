@@ -30,8 +30,8 @@ Options:
   -u, --update   Update to the latest version from npm
 
 Environment Variables:
-  CLAUDE_SUPER_MONITOR_UI_PORT   HTTP server port (default: 3000)
-  CLAUDE_SUPER_MONITOR_WS_PORT   WebSocket server port (default: 3001)
+  CLAUDE_SUPER_MONITOR_UI_PORT   HTTP server port (default: 5999)
+  CLAUDE_SUPER_MONITOR_WS_PORT   WebSocket server port (default: 5998)
 
 Examples:
   claude-super-monitor              Start the dashboard
