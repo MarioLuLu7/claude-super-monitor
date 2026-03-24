@@ -53,6 +53,8 @@ After installation, simply run:
 
 ```bash
 claude-super-monitor
+# or use the short alias
+csm
 ```
 
 The dashboard will:
