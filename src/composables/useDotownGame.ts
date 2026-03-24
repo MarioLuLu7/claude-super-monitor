@@ -155,6 +155,42 @@ export function useDotownGame(
   let tick = 0;
   let particles: Array<{ g: PIXI.Graphics; vx: number; vy: number; life: number; maxLife: number; color: number }> = [];
 
+  // 场景过渡动画状态
+  interface TransitionState {
+    active: boolean;
+    progress: number;
+    fromLevel: StatusLevel | null;
+    toLevel: StatusLevel;
+    oldSprites: PIXI.Sprite[];
+    oldBgColor: number;
+  }
+  let transitionState: TransitionState = {
+    active: false,
+    progress: 0,
+    fromLevel: null,
+    toLevel: 'idle',
+    oldSprites: [],
+    oldBgColor: 0x1a1a2e,
+  };
+  // 背景颜色缓存用于过渡
+  const BG_COLOR_CACHE: Record<string, number> = {
+    thinking: 0x1a1a5e,
+    working: 0x0d1b2a,
+    done: 0x1a472a,
+    auth: 0x4a0e0e,
+    error: 0x3d0000,
+    idle: 0x0f0f23,
+    reading: 0x2a1a5e,
+    writing: 0x1a5e3a,
+    searching: 0x0d3b5a,
+    planning: 0x5e4a1a,
+    agent: 0x5e1a4a,
+    web: 0x1a3a6e,
+    ask: 0x6e3a1a,
+    notebook: 0x3a5e1a,
+    bash: 0x1a5e5e,
+  };
+
   const HERO_SCALE = 0.1;
   const ENEMY_SCALE = 0.08;
   const W = 400;
@@ -641,14 +677,6 @@ export function useDotownGame(
     worldLayer.addChild(mountSprite);
   }
 
-  function clearMiniSprites() {
-    for (const sprite of miniSprites) {
-      worldLayer.removeChild(sprite);
-      sprite.destroy();
-    }
-    miniSprites = [];
-  }
-
   function addMiniSprite(url: string, scale = 0.04, x = 200, y = GROUND_Y) {
     const s = makeSprite(url, scale);
     s.x = x;
@@ -660,18 +688,66 @@ export function useDotownGame(
 
   // ─── 场景逻辑 ─────────────────────────────────────────────
 
-  function clearEnemies() {
-    if (enemySprite) { worldLayer.removeChild(enemySprite); enemySprite.destroy(); enemySprite = null; }
-    if (bossSprite)  { worldLayer.removeChild(bossSprite);  bossSprite.destroy();  bossSprite = null; }
-    if (mountSprite) { worldLayer.removeChild(mountSprite); mountSprite.destroy(); mountSprite = null; }
-    if (propGraphics) { worldLayer.removeChild(propGraphics); propGraphics.destroy(); propGraphics = null; }
-    clearMiniSprites();
-    clearParticles();
-    hideDialogBubble();
+  // 获取所有当前场景精灵（用于过渡）
+  function getCurrentSprites(): PIXI.Sprite[] {
+    const sprites: PIXI.Sprite[] = [];
+    if (enemySprite) sprites.push(enemySprite);
+    if (bossSprite) sprites.push(bossSprite);
+    if (mountSprite) sprites.push(mountSprite);
+    sprites.push(...miniSprites);
+    return sprites;
   }
 
   function updateScene(level: StatusLevel, key: string = currentKey) {
-    clearEnemies();
+    // 如果正在过渡中，立即完成之前的过渡
+    if (transitionState.active) {
+      finishTransition();
+    }
+
+    // 保存当前状态用于过渡
+    const oldSprites = getCurrentSprites();
+    const fromLevel = currentLevel;
+    const fromColor = BG_COLOR_CACHE[fromLevel] ?? BG_COLOR_CACHE.idle;
+
+    // 开始新的过渡 - 直接修改对象属性，不要重新赋值，避免闭包引用问题
+    transitionState.active = true;
+    transitionState.progress = 0;
+    transitionState.fromLevel = fromLevel;
+    transitionState.toLevel = level;
+    transitionState.oldSprites = oldSprites;
+    transitionState.oldBgColor = fromColor;
+
+    // 旧精灵淡出
+    for (const sprite of oldSprites) {
+      (sprite as any).__transitionOut = true;
+      (sprite as any).__transitionSpeed = 0.05 + Math.random() * 0.03;
+    }
+
+    // 清空管理数组，但保留精灵在场景中用于过渡动画
+    // 旧精灵现在只由 transitionState.oldSprites 管理
+    miniSprites = [];
+    if (enemySprite) { enemySprite = null; }
+    if (bossSprite)  { bossSprite = null; }
+    if (mountSprite) { mountSprite = null; }
+    if (propGraphics) { worldLayer.removeChild(propGraphics); propGraphics.destroy(); propGraphics = null; }
+    clearParticles();
+    hideDialogBubble();
+
+    // 新场景设置（精灵初始透明）
+    setupNewScene(level, key);
+
+    // 新精灵淡入
+    const newSprites = getCurrentSprites();
+    for (const sprite of newSprites) {
+      sprite.alpha = 0;
+      (sprite as any).__transitionIn = true;
+      (sprite as any).__transitionSpeed = 0.08 + Math.random() * 0.04;
+    }
+
+    updateHUD();
+  }
+
+  function setupNewScene(level: StatusLevel, key: string = currentKey) {
     drawBackground(level);
 
     switch (level) {
@@ -692,8 +768,27 @@ export function useDotownGame(
       case 'bash': setupBash(); break;
       default: setupIdle();
     }
+  }
 
-    updateHUD();
+  function finishTransition() {
+    // 确保所有新精灵完全可见
+    const newSprites = getCurrentSprites();
+    for (const sprite of newSprites) {
+      sprite.alpha = 1;
+      (sprite as any).__transitionIn = false;
+    }
+
+    // 清理旧精灵
+    for (const sprite of transitionState.oldSprites) {
+      if (sprite) {
+        if (sprite.parent) {
+          sprite.parent.removeChild(sprite);
+        }
+        sprite.destroy();
+      }
+    }
+    transitionState.active = false;
+    transitionState.oldSprites = [];
   }
 
   // ─── 各状态场景设置 ────────────────────────────────────────
@@ -1247,6 +1342,17 @@ export function useDotownGame(
     }
   }
 
+  function spawnDustParticle(x: number, y: number, dir: number) {
+    const g = new PIXI.Graphics();
+    g.beginFill(0xaaaaaa, 0.6);
+    g.drawCircle(0, 0, 2 + Math.random() * 3);
+    g.endFill();
+    g.x = x - dir * 10;
+    g.y = y - 5;
+    fxLayer.addChild(g);
+    particles.push({ g, vx: -dir * (0.5 + Math.random()), vy: -(0.5 + Math.random() * 1), life: 20, maxLife: 20, color: 0xaaaaaa });
+  }
+
   function spawnLightning(x: number, y: number) {
     const g = new PIXI.Graphics();
     g.lineStyle(2, 0xffff00);
@@ -1271,6 +1377,44 @@ export function useDotownGame(
   function gameLoop() {
     tick++;
 
+    // 处理场景过渡动画
+    if (transitionState.active) {
+      transitionState.progress = Math.min(1, transitionState.progress + 0.05);
+
+      // 旧精灵淡出
+      let allOldFaded = true;
+      for (const sprite of transitionState.oldSprites) {
+        if (sprite && sprite.parent) {
+          const speed = (sprite as any).__transitionSpeed ?? 0.05;
+          sprite.alpha = Math.max(0, sprite.alpha - speed);
+          if (sprite.alpha > 0) allOldFaded = false;
+        }
+      }
+
+      // 新精灵淡入
+      const newSprites = getCurrentSprites();
+      for (const sprite of newSprites) {
+        if ((sprite as any).__transitionIn) {
+          const speed = (sprite as any).__transitionSpeed ?? 0.08;
+          sprite.alpha = Math.min(1, sprite.alpha + speed);
+          if (sprite.alpha >= 1) {
+            (sprite as any).__transitionIn = false;
+          }
+        }
+      }
+
+      // 背景颜色过渡
+      if (bgGraphics) {
+        // 重新绘制渐变背景
+        drawBackground(transitionState.toLevel);
+      }
+
+      // 过渡完成
+      if (allOldFaded || transitionState.progress >= 1) {
+        finishTransition();
+      }
+    }
+
     const clouds = (bgLayer as any).__clouds as PIXI.Container;
     if (clouds) {
       for (const child of clouds.children) {
@@ -1282,9 +1426,17 @@ export function useDotownGame(
     }
 
     if (heroSprite) {
-      heroSprite.x = lerp(heroSprite.x, heroTargetX, 0.05);
+      // 平滑移动到目标位置（缓动系数）
+      const dx = heroTargetX - heroSprite.x;
+      heroSprite.x += dx * 0.08;
 
-      if (currentLevel === 'idle' || currentLevel === 'thinking' || currentLevel === 'planning') {
+      // 判断是否正在移动
+      const isMoving = Math.abs(dx) > 2;
+
+      if (isMoving) {
+        // 行走时的弹跳动画
+        heroBounce = Math.abs(Math.sin(tick * 0.3)) * 6;
+      } else if (currentLevel === 'idle' || currentLevel === 'thinking' || currentLevel === 'planning') {
         heroBounce = Math.sin(tick * 0.08) * 3;
       } else if (currentLevel === 'working' || currentLevel === 'writing' || currentLevel === 'bash') {
         heroBounce = Math.sin(tick * 0.2) * 4;
@@ -1300,6 +1452,18 @@ export function useDotownGame(
 
       if (currentLevel !== 'error') {
         heroSprite.y = GROUND_Y + heroBounce;
+      }
+
+      // 行走时添加倾斜和灰尘效果
+      if (isMoving) {
+        // 朝向目标倾斜
+        heroSprite.angle = Math.max(-15, Math.min(15, dx * 0.5));
+        // 产生灰尘粒子
+        if (tick % 8 === 0) {
+          spawnDustParticle(heroSprite.x, GROUND_Y, dx > 0 ? 1 : -1);
+        }
+      } else {
+        heroSprite.angle = lerp(heroSprite.angle, 0, 0.2);
       }
 
       heroSprite.scale.x = heroFlip ? HERO_SCALE : -HERO_SCALE;
