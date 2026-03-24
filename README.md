@@ -11,6 +11,8 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 
 ![Claude Super Monitor Screenshot](https://raw.githubusercontent.com/MarioLuLu7/claude-super-monitor/main/screenshot.png)
 
+![Claude Super Monitor Screenshot 2](https://raw.githubusercontent.com/MarioLuLu7/claude-super-monitor/main/screenshot2.png)
+
 ## ⚠️ Platform Requirements
 
 **Current Limitations:**
@@ -32,6 +34,7 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 - 🌐 **Multi-session View** - Monitor multiple Claude Code sessions side-by-side
 - 📝 **Session Titles** - First user message automatically extracted as session title
 - 🔔 **Notification Bar** - Completed sessions collapse into notifications; click to restore
+- 🎮 **Game Panel** - Interactive Pixi.js mini-game with DOTOWN pixel art characters that react to Claude's tool calls
 - 🎨 **Bilingual UI** - Chinese and English interface support
 - ⚙️ **Configurable** - Adjust auto-approval, collapse delay, language, and more
 - 🔄 **Auto-update** - Built-in command to update to the latest version

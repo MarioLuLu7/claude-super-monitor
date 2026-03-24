@@ -8,7 +8,7 @@ if (args.includes('--update') || args.includes('-u')) {
   const { execSync } = require('child_process');
   console.log('\x1b[36m[claude-super-monitor] Checking for updates...\x1b[0m');
   try {
-    execSync('npm update -g claude-super-monitor', { stdio: 'inherit' });
+    execSync('npm install -g claude-super-monitor@latest', { stdio: 'inherit' });
     console.log('\x1b[32m[claude-super-monitor] Update completed!\x1b[0m');
     process.exit(0);
   } catch (e) {

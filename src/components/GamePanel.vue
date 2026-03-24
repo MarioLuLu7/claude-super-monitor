@@ -4,6 +4,7 @@
     <div class="game-header">
       <span class="game-title">◈ {{ sessionTitle || displayName }}</span>
       <button
+        v-if="isDev"
         class="test-mode-toggle"
         :class="{ active: isTestMode }"
         @click="toggleTestMode"
@@ -75,6 +76,9 @@ const props = defineProps<{
 
 const { t: tComputed } = useI18n();
 const t = (key: string) => tComputed.value(key as I18nKey);
+
+// 是否开发环境
+const isDev = import.meta.env.DEV;
 
 // 测试模式状态
 const isTestMode = ref(false);

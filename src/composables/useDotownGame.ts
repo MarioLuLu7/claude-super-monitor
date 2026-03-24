@@ -34,9 +34,6 @@ const ASSETS = {
   map:          ASSET_BASE + 'other_map_01.png',
   cloud:        ASSET_BASE + 'town_cloud_01.png',
   thunder:      ASSET_BASE + 'other_thunder_01.png',
-  hanabi_05:    ASSET_BASE + 'hanabi_05.png',
-  hanabi_07:    ASSET_BASE + 'hanabi_07.png',
-  hanabi_08:    ASSET_BASE + 'hanabi08.png',
   sushi:        ASSET_BASE + 'food_spamsushi_02.png',
   pine_tree:    ASSET_BASE + 'plant_matu_01.png',
   needle_tree:  ASSET_BASE + 'plant_needle_leaved_tree_01.png',
@@ -235,11 +232,25 @@ export function useDotownGame(
 
   function loadTexture(url: string): Promise<void> {
     return new Promise((resolve) => {
+      // 添加超时保护，确保即使事件不触发也能继续
+      const timeout = setTimeout(() => {
+        console.warn('[DOTOWN] Texture load timeout:', url);
+        resolve();
+      }, 5000);
+
       console.log('[DOTOWN] loadTexture:', url);
-      if (textureCache.has(url)) {
-        console.log('[DOTOWN] Already cached:', url);
+      // 检查缓存中的纹理是否仍然有效
+      const cached = textureCache.get(url);
+      if (cached && cached.baseTexture && cached.baseTexture.valid) {
+        console.log('[DOTOWN] Already cached and valid:', url);
+        clearTimeout(timeout);
         resolve();
         return;
+      }
+      // 如果缓存无效，移除它
+      if (cached) {
+        console.log('[DOTOWN] Removing invalid cached texture:', url);
+        textureCache.delete(url);
       }
 
       const texture = PIXI.Texture.from(url);
@@ -249,16 +260,19 @@ export function useDotownGame(
         texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
         textureCache.set(url, texture);
         console.log('[DOTOWN] Texture cached:', url, 'size:', texture.width, 'x', texture.height);
+        clearTimeout(timeout);
         resolve();
       } else {
         texture.baseTexture.on('loaded', () => {
           texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
           textureCache.set(url, texture);
           console.log('[DOTOWN] Texture loaded async:', url, 'size:', texture.width, 'x', texture.height);
+          clearTimeout(timeout);
           resolve();
         });
         texture.baseTexture.on('error', () => {
           console.error('[DOTOWN] Failed to load:', url);
+          clearTimeout(timeout);
           resolve(); // 继续，使用占位符
         });
       }
@@ -268,9 +282,16 @@ export function useDotownGame(
   function getTexture(url: string): PIXI.Texture {
     console.log('[DOTOWN] getTexture called:', url);
     const cached = textureCache.get(url);
-    if (cached) {
+    // 检查纹理是否存在且仍然有效
+    if (cached && cached.baseTexture && cached.baseTexture.valid) {
       console.log('[DOTOWN] Found cached texture:', url, 'size:', cached.width, 'x', cached.height);
       return cached;
+    }
+
+    // 如果纹理无效或不存在，从缓存中移除并重新创建
+    if (cached) {
+      console.log('[DOTOWN] Cached texture invalid, removing:', url);
+      textureCache.delete(url);
     }
 
     console.error('[DOTOWN] Texture NOT found in cache:', url);
@@ -1558,6 +1579,15 @@ export function useDotownGame(
       app.ticker.remove(gameLoop);
       app.destroy(false, { children: true });
       app = null;
+    }
+    // 清空纹理缓存，因为 app.destroy() 会销毁所有纹理
+    textureCache.clear();
+    // 同时清理 Pixi 的全局纹理缓存，避免残留无效引用
+    for (const key of Object.keys(PIXI.utils.TextureCache)) {
+      delete PIXI.utils.TextureCache[key];
+    }
+    for (const key of Object.keys(PIXI.utils.BaseTextureCache)) {
+      delete PIXI.utils.BaseTextureCache[key];
     }
     isReady.value = false;
   }
