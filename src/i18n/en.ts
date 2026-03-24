@@ -43,10 +43,10 @@ export const en: Record<I18nKey, string> = {
   settings_save:                'Save & Close',
 
   // ── Game mode ──
-  switch_to_game:      '🎮 Game Mode',
-  switch_to_normal:    '📊 Normal Mode',
+  switch_to_game:      "Claude's Adventure",
+  switch_to_normal:    'Text Mode',
   loading_game:        'Loading Game',
   game_room:           'Game Room',
-  game:                'GAME',
-  normal:              'NORMAL',
+  game:                "Claude's Adventure",
+  normal:              'Text Mode',
 };

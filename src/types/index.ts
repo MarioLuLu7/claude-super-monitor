@@ -12,7 +12,7 @@ export interface Session {
   size: number;
 }
 
-export type StatusLevel = 'thinking' | 'working' | 'done' | 'auth' | 'error' | 'idle';
+export type StatusLevel = 'thinking' | 'working' | 'done' | 'auth' | 'error' | 'idle' | 'reading' | 'writing' | 'searching' | 'planning' | 'agent' | 'web' | 'ask' | 'notebook' | 'bash';
 
 export interface StatusItem {
   id: string;

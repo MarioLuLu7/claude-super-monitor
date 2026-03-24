@@ -3,7 +3,7 @@
 
     <!-- ══ HUD 顶部栏 ════════════════════════════════ -->
     <header class="hud-bar">
-      <span class="hud-logo">◈ CLAUDE STATUS</span>
+      <span class="hud-logo">◈ CLAUDE SUPER MONITOR</span>
 
       <div class="hud-sessions" v-if="panes.length">
         <span class="hud-blink">▶</span>
@@ -12,6 +12,9 @@
       </div>
 
       <div class="hud-right">
+        <span :class="['led', connected ? 'online' : 'connecting']"></span>
+        <span :class="connected ? 'hud-live' : 'hud-off'">{{ connected ? 'LIVE' : 'OFF' }}</span>
+        <span class="hud-clock">{{ clock }}</span>
         <!-- 游戏模式切换按钮 -->
         <button
           class="hud-mode"
@@ -19,12 +22,9 @@
           @click="toggleGameMode"
           :title="isGameMode ? t('switch_to_normal') : t('switch_to_game')"
         >
-          <span class="mode-icon">{{ isGameMode ? '📊' : '🎮' }}</span>
+          <span class="mode-icon">{{ isGameMode ? '📊' : '⭐' }}</span>
           <span class="mode-text">{{ isGameMode ? t('normal') : t('game') }}</span>
         </button>
-        <span :class="['led', connected ? 'online' : 'connecting']"></span>
-        <span :class="connected ? 'hud-live' : 'hud-off'">{{ connected ? 'LIVE' : 'OFF' }}</span>
-        <span class="hud-clock">{{ clock }}</span>
         <button class="hud-cfg" @click="showSettings = true" title="Settings">⚙</button>
       </div>
     </header>
@@ -196,7 +196,7 @@ html, body, #app { height: 100%; margin: 0; padding: 0; }
 }
 .hud-blink { animation: blink 1s step-end infinite; font-size: 8px; }
 .hud-count { font-size: 9px; letter-spacing: 1px; }
-.hud-label { color: var(--px-dim); letter-spacing: 2px; }
+.hud-label { color: var(--px-cyan); letter-spacing: 2px; }
 
 .hud-right {
   display: flex;

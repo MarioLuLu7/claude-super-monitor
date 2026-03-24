@@ -41,12 +41,12 @@ export const zh = {
   settings_save:                '保存并关闭',
 
   // ── 游戏模式 ──
-  switch_to_game:      '🎮 游戏模式',
-  switch_to_normal:    '📊 普通模式',
+  switch_to_game:      '勇者克劳德的冒险',
+  switch_to_normal:    '文字模式',
   loading_game:        '加载游戏',
   game_room:           '游戏房间',
-  game:                '游戏',
-  normal:              '普通',
+  game:                '勇者克劳德的冒险',
+  normal:              '文字模式',
 } as const;
 
 export type I18nKey = keyof typeof zh;

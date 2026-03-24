@@ -110,6 +110,15 @@ const ICONS: Record<StatusLevel, string> = {
   auth:     '!?!',
   error:    'ERR',
   idle:     '...',
+  reading:  'RD',
+  writing:  'WR',
+  searching: 'SR',
+  planning: 'PL',
+  agent:    'AG',
+  web:      'WB',
+  ask:      'ASK',
+  notebook: 'NB',
+  bash:     'SH',
 };
 
 const CHARS: Record<StatusLevel, string> = {
@@ -119,6 +128,15 @@ const CHARS: Record<StatusLevel, string> = {
   auth:     '!',
   error:    '✗',
   idle:     '·',
+  reading:  'R',
+  writing:  'W',
+  searching: 'S',
+  planning: 'P',
+  agent:    'A',
+  web:      'W',
+  ask:      '?',
+  notebook: 'N',
+  bash:     '$',
 };
 
 const levelIcon = (l: StatusLevel) => ICONS[l] ?? '...';

@@ -20,7 +20,7 @@ if (args.includes('--update') || args.includes('-u')) {
 // Handle --help / -h flag
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
-Claude Super Monitor - Real-time dashboard for Claude Code sessions
+CLAUDE SUPER MONITOR - Real-time dashboard for Claude Code sessions
 
 Usage:
   claude-super-monitor [options]
