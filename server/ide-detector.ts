@@ -6,6 +6,8 @@ const IDE_DIR      = path.join(CLAUDE_DIR, 'ide');
 const HISTORY_DIR  = path.join(CLAUDE_DIR, 'file-history');
 const PROJECTS_DIR = path.join(CLAUDE_DIR, 'projects');
 
+export type SessionSource = 'vscode' | 'cli';
+
 export interface IdeSession {
   lockFile: string;
   pid: number;
@@ -14,6 +16,14 @@ export interface IdeSession {
   active: boolean;
   /** lock 文件的创建时间（= 该 VSCode 窗口的开启时间） */
   openedAtMs: number;
+}
+
+export interface CliSession {
+  sessionId: string;
+  projectName: string;
+  originalPath: string;
+  mtime: number;
+  source: SessionSource;
 }
 
 /** 读取所有 .lock 文件并检测进程是否存活 */
@@ -48,15 +58,103 @@ export function workspaceToProjectName(folder: string): string {
   return folder.replace(/\\/g, '-').replace(':', '-');
 }
 
-/** 活跃项目名集合（PID 存活的 lock 文件对应的 workspace） */
+/** 活跃项目名集合（PID 存活的 lock 文件对应的 workspace + CLI 活跃项目） */
 export function getActiveProjectNames(): Set<string> {
   const names = new Set<string>();
+  // VSCode 活跃项目
   for (const s of getIdeSessions()) {
     if (s.active) {
       for (const folder of s.workspaceFolders) names.add(workspaceToProjectName(folder));
     }
   }
+  // CLI 活跃项目
+  for (const s of getCliActiveSessions()) {
+    names.add(s.projectName);
+  }
   return names;
+}
+
+/** CLI 会话活跃阈值（5 分钟） */
+const CLI_ACTIVE_THRESHOLD_MS = 5 * 60 * 1000;
+
+/** 获取 CLI 活跃会话（基于 JSONL 文件修改时间） */
+export function getCliActiveSessions(): CliSession[] {
+  if (!fs.existsSync(PROJECTS_DIR)) return [];
+
+  const now = Date.now();
+  const sessions: CliSession[] = [];
+
+  for (const projectName of fs.readdirSync(PROJECTS_DIR)) {
+    const projDir = path.join(PROJECTS_DIR, projectName);
+    if (!fs.statSync(projDir).isDirectory()) continue;
+
+    for (const file of fs.readdirSync(projDir)) {
+      if (!file.endsWith('.jsonl') || file.includes('subagent')) continue;
+
+      const sessionId = file.replace('.jsonl', '');
+      const jsonlPath = path.join(projDir, file);
+      const histDir = path.join(HISTORY_DIR, sessionId);
+
+      // 使用 file-history 或 jsonl 的 mtime
+      let mtime: number;
+      if (fs.existsSync(histDir)) {
+        mtime = fs.statSync(histDir).mtimeMs;
+      } else {
+        mtime = fs.statSync(jsonlPath).mtimeMs;
+      }
+
+      // 判断是否活跃（使用更宽松的 30 分钟阈值）
+      const age = now - mtime;
+      const threshold = CLI_ACTIVE_THRESHOLD_MS * 6; // 30 分钟
+      console.log(`[CLI Check] ${sessionId}: age=${Math.round(age/1000)}s, active=${age < threshold}`);
+
+      if (age < threshold) {
+        const originalPath = projectName
+          .replace(/^([A-Za-z])--/, '$1:\\')
+          .replace(/--/g, '\\');
+
+        sessions.push({
+          sessionId,
+          projectName,
+          originalPath,
+          mtime,
+          source: 'cli',
+        });
+      }
+    }
+  }
+
+  return sessions.sort((a, b) => b.mtime - a.mtime);
+}
+
+/** 获取指定项目的 CLI 会话 ID 列表 */
+export function getCliOpenSessionIds(projectName: string): string[] {
+  return getCliActiveSessions()
+    .filter(s => s.projectName === projectName)
+    .map(s => s.sessionId);
+}
+
+/** 判断会话来源 */
+export function getSessionSource(sessionId: string): SessionSource {
+  // 检查是否属于 VSCode 会话
+  for (const s of getIdeSessions()) {
+    if (s.active) {
+      for (const folder of s.workspaceFolders) {
+        const openIds = getOpenSessionIds(workspaceToProjectName(folder));
+        if (openIds.includes(sessionId)) {
+          return 'vscode';
+        }
+      }
+    }
+  }
+
+  // 检查是否属于 CLI 会话
+  const cliSessions = getCliActiveSessions();
+  if (cliSessions.some(s => s.sessionId === sessionId)) {
+    return 'cli';
+  }
+
+  return 'cli'; // 默认视为 CLI
 }
 
 /**

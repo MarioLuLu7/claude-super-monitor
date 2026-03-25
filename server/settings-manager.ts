@@ -19,8 +19,15 @@ const WILDCARD_PERMISSIONS = [
 ];
 
 function getHookCommand(pkgRoot: string): string {
-  const scriptPath = path.join(pkgRoot, 'hooks', 'pre-tool-use.ps1');
-  return `powershell -ExecutionPolicy Bypass -File "${scriptPath.replace(/\//g, '\\')}"`;
+  if (process.platform === 'win32') {
+    // Windows: 使用 PowerShell（兼容现有行为）
+    const scriptPath = path.join(pkgRoot, 'hooks', 'pre-tool-use.ps1');
+    return `powershell -ExecutionPolicy Bypass -File "${scriptPath.replace(/\//g, '\\')}"`;
+  } else {
+    // macOS/Linux: 使用 Node.js（跨平台）
+    const scriptPath = path.join(pkgRoot, 'hooks', 'pre-tool-use.js');
+    return `node "${scriptPath}"`;
+  }
 }
 
 function loadSettings(): Record<string, unknown> {

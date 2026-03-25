@@ -10,26 +10,32 @@ function wsServerPlugin(): Plugin {
   return {
     name: 'ws-server',
     configureServer(server) {
-      if (!wsServer) {
-        // 注入白名单 + Hook
-        injectSettings();
+      // HMR 重启时先停止旧服务器
+      if (wsServer) {
+        wsServer.stop();
+        wsServer = null;
+      }
 
-        wsServer = new WebSocketServer(5998);
-        wsServer.start();
+      // 注入白名单 + Hook
+      injectSettings();
 
-        // Vite dev server 关闭时还原
-        server.httpServer?.on('close', () => {
+      wsServer = new WebSocketServer(5998);
+      wsServer.start();
+
+      // Vite dev server 关闭时还原
+      server.httpServer?.on('close', () => {
+        wsServer?.stop();
+        wsServer = null;
+        restoreSettings();
+      });
+
+      // 进程退出时还原（Ctrl+C 等）
+      for (const sig of ['SIGINT', 'SIGTERM', 'exit'] as const) {
+        process.once(sig, () => {
           wsServer?.stop();
+          wsServer = null;
           restoreSettings();
         });
-
-        // 进程退出时还原（Ctrl+C 等）
-        for (const sig of ['SIGINT', 'SIGTERM', 'exit'] as const) {
-          process.once(sig, () => {
-            wsServer?.stop();
-            restoreSettings();
-          });
-        }
       }
     },
   };

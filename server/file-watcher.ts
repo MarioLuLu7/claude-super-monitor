@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 import { createReadStream } from 'fs';
-import { getActiveProjectNames } from './ide-detector';
+import { getActiveProjectNames, getCliActiveSessions } from './ide-detector';
 
 const BASE_DIR = path.join(
   process.env.USERPROFILE || process.env.HOME || '',
@@ -16,6 +16,7 @@ export interface Project {
   latestMtime: Date;
   sessions: Session[];
   activeInIde: boolean;   // 当前是否在 VSCode 中打开
+  activeInCli: boolean;   // 当前是否有 CLI 活跃会话
 }
 
 export interface Session {
@@ -143,8 +144,8 @@ export function parseStatusItems(line: string): StatusItem[] {
           }
         }
 
-        // 有思考但无工具无文本 → 思考中
-        if (hasThinking && !hasToolUse && !hasText) {
+        // 有思考 → 先发送思考状态
+        if (hasThinking) {
           const detail = thinkingText.trim().replace(/\n+/g, ' ').slice(0, 200) || undefined;
           items.push({ id: `${ts}-thinking`, timestamp: ts, level: 'thinking', key: 'status_thinking', detail });
         }
@@ -156,6 +157,10 @@ export function parseStatusItems(line: string): StatusItem[] {
           }
           const detail = replyText.trim().replace(/\n+/g, ' ').slice(0, 200) || undefined;
           items.push({ id: `${ts}-done`, timestamp: ts, level: 'done', key: 'status_done', detail });
+        }
+        // 有工具调用但没有文本回复 → 发送完成状态
+        if (hasToolUse && !hasText) {
+          items.push({ id: `${ts}-done`, timestamp: ts, level: 'done', key: 'status_done' });
         }
       } else if (typeof content === 'string' && content.trim()) {
         // content 为字符串 → 已完成回复
@@ -221,6 +226,9 @@ export class FileWatcher {
   getProjects(): Project[] {
     if (!fs.existsSync(BASE_DIR)) return [];
     const activeNames = getActiveProjectNames();
+    const cliSessions = getCliActiveSessions();
+    const cliProjectNames = new Set(cliSessions.map(s => s.projectName));
+
     return fs
       .readdirSync(BASE_DIR)
       .filter((n) => fs.statSync(path.join(BASE_DIR, n)).isDirectory())
@@ -229,11 +237,14 @@ export class FileWatcher {
         const latestMtime = sessions[0]?.mtime ?? new Date(0);
         const originalPath = n.replace(/^([A-Za-z])--/, '$1:\\').replace(/--/g, '\\');
         const activeInIde = activeNames.has(n);
-        return { name: n, originalPath, latestMtime, sessions, activeInIde };
+        const activeInCli = cliProjectNames.has(n);
+        return { name: n, originalPath, latestMtime, sessions, activeInIde, activeInCli };
       })
       .sort((a, b) => {
-        // 活跃的优先，其次按最新修改时间
-        if (a.activeInIde !== b.activeInIde) return a.activeInIde ? -1 : 1;
+        // 活跃的优先（IDE 或 CLI），其次按最新修改时间
+        const aActive = a.activeInIde || a.activeInCli;
+        const bActive = b.activeInIde || b.activeInCli;
+        if (aActive !== bActive) return aActive ? -1 : 1;
         return b.latestMtime.getTime() - a.latestMtime.getTime();
       });
   }
@@ -308,13 +319,19 @@ export class FileWatcher {
       const lastPos = this.filePositions.get(filePath) ?? 0;
       if (currentSize <= lastPos) { this.filePositions.set(filePath, currentSize); return; }
 
+      console.log(`[FileWatcher] File changed: ${path.basename(filePath)}, new bytes: ${currentSize - lastPos}`);
+
       const rl = readline.createInterface({
         input: createReadStream(filePath, { start: lastPos }),
         crlfDelay: Infinity,
       });
       rl.on('line', (line) => {
         if (!line.trim()) return;
-        for (const item of parseStatusItems(line)) onStatus(item);
+        console.log(`[FileWatcher] Parsing line: ${line.slice(0, 100)}...`);
+        for (const item of parseStatusItems(line)) {
+          console.log(`[FileWatcher] Status item: ${item.level} - ${item.key}`);
+          onStatus(item);
+        }
       });
       this.filePositions.set(filePath, currentSize);
     });

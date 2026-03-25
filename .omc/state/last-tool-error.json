@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"grep -n \\\"HISTORY_DIR\\\\|PROJECTS_DIR\\\" ~/.claude/projects/ 2>/dev/null; echo \\\"---\\\"; head -10 ~/.claude/file-history/*/\",\"description\":\"检查 file-history 目录结构\"}",
+  "error": "Exit code 1\n---\n==> /c/Users/Mario/.claude/file-history/02ede502-af07-42f1-8136-e1e6f879d667/ <==\nhead: error reading '/c/Users/Mario/.claude/file-history/02ede502-af07-42f1-8136-e1e6f879d667/': Is a directory\n\n==> /c/Users/Mario/.claude/file-history/043794f2-af47-4a2a-b124-46f35e93f866/ <==\nhead: error reading '/c/Users/Mario/.claude/file-history/043794f2-af47-4a2a-b124-46f35e93f866/': Is a directory\n\n==> /c/Users/Mario/.claude/file-history/04675523-724d-45ca-b71c-6aa7a763bb78/ <==\nhead: error ...",
+  "timestamp": "2026-03-24T09:50:09.334Z",
+  "retry_count": 1
+}

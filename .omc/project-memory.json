@@ -1,0 +1,361 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1774343725776,
+  "projectRoot": "d:\\code\\Script\\web",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=18",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "vue",
+        "version": "3.5.30",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "8.0.1",
+        "category": "build"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": "Node.js 18"
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "vite",
+      "build": "vue-tsc -b && vite build && tsc -p tsconfig.server.json && node --input-type=commonjs -e \"require('fs').writeFileSync('dist-server/package.json', JSON.stringify({type:'commonjs'}))\"",
+      "preview": "vite preview",
+      "prepublishOnly": "npm run build",
+      "start": "node bin/claude-super-monitor.js"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "bin",
+      "public",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "bin": {
+      "path": "bin",
+      "purpose": "Executable scripts",
+      "fileCount": 1,
+      "lastAccessed": 1774343725731,
+      "keyFiles": [
+        "claude-super-monitor.js"
+      ]
+    },
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 3,
+      "lastAccessed": 1774343725733,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg",
+        "index.html"
+      ]
+    },
+    "dist-server": {
+      "path": "dist-server",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1774343725748,
+      "keyFiles": [
+        "file-watcher.js",
+        "ide-detector.js",
+        "package.json",
+        "settings-manager.js",
+        "standalone.js"
+      ]
+    },
+    "hooks": {
+      "path": "hooks",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1774343725749,
+      "keyFiles": [
+        "pre-tool-use.ps1",
+        "README.md"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 2,
+      "lastAccessed": 1774343725749,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg"
+      ]
+    },
+    "server": {
+      "path": "server",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1774343725750,
+      "keyFiles": [
+        "file-watcher.ts",
+        "ide-detector.ts",
+        "settings-manager.ts",
+        "standalone.ts",
+        "ws-server.ts"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1774343725750,
+      "keyFiles": [
+        "App.vue",
+        "main.ts"
+      ]
+    },
+    "dist\\assets": {
+      "path": "dist\\assets",
+      "purpose": "Static assets",
+      "fileCount": 3,
+      "lastAccessed": 1774343725751,
+      "keyFiles": [
+        "index-K2XI0r21.css",
+        "index-LU3miZCF.js",
+        "zpix-DQTJuXoR.ttf"
+      ]
+    },
+    "src\\assets": {
+      "path": "src\\assets",
+      "purpose": "Static assets",
+      "fileCount": 4,
+      "lastAccessed": 1774343725753,
+      "keyFiles": [
+        "hero.png",
+        "vite.svg",
+        "vue.svg"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 7,
+      "lastAccessed": 1774343725753,
+      "keyFiles": [
+        "AuthDialog.vue",
+        "GamePanel.vue",
+        "NotificationBar.vue"
+      ]
+    },
+    "src\\types": {
+      "path": "src\\types",
+      "purpose": "Type definitions",
+      "fileCount": 2,
+      "lastAccessed": 1774343725754,
+      "keyFiles": [
+        "game.ts",
+        "index.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "server\\file-watcher.ts",
+      "accessCount": 12,
+      "lastAccessed": 1774345735093,
+      "type": "file"
+    },
+    {
+      "path": "server\\ide-detector.ts",
+      "accessCount": 12,
+      "lastAccessed": 1774345902722,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 10,
+      "lastAccessed": 1774345097098,
+      "type": "directory"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 8,
+      "lastAccessed": 1774345058985,
+      "type": "file"
+    },
+    {
+      "path": "server\\ws-server.ts",
+      "accessCount": 8,
+      "lastAccessed": 1774345653507,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 7,
+      "lastAccessed": 1774345073184,
+      "type": "file"
+    },
+    {
+      "path": "server\\settings-manager.ts",
+      "accessCount": 6,
+      "lastAccessed": 1774345080622,
+      "type": "file"
+    },
+    {
+      "path": "bin\\claude-super-monitor.js",
+      "accessCount": 4,
+      "lastAccessed": 1774345096137,
+      "type": "file"
+    },
+    {
+      "path": "hooks\\pre-tool-use.ps1",
+      "accessCount": 4,
+      "lastAccessed": 1774345121106,
+      "type": "file"
+    },
+    {
+      "path": "server\\standalone.ts",
+      "accessCount": 3,
+      "lastAccessed": 1774345080741,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\StatusPanel.vue",
+      "accessCount": 3,
+      "lastAccessed": 1774346024168,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\Mario\\.claude",
+      "accessCount": 2,
+      "lastAccessed": 1774344494477,
+      "type": "directory"
+    },
+    {
+      "path": "hooks\\README.md",
+      "accessCount": 2,
+      "lastAccessed": 1774344567559,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\Mario\\.claude\\skills\\pub\\SKILL.md",
+      "accessCount": 2,
+      "lastAccessed": 1774344600619,
+      "type": "file"
+    },
+    {
+      "path": "README_CN.md",
+      "accessCount": 2,
+      "lastAccessed": 1774345059417,
+      "type": "file"
+    },
+    {
+      "path": "src\\composables\\useWebSocket.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774344399378,
+      "type": "file"
+    },
+    {
+      "path": "src\\types\\index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774344399543,
+      "type": "file"
+    },
+    {
+      "path": "src\\composables\\useSettings.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774344407609,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\GamePanel.vue",
+      "accessCount": 1,
+      "lastAccessed": 1774344407871,
+      "type": "file"
+    },
+    {
+      "path": "src\\i18n\\zh.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774344407887,
+      "type": "file"
+    },
+    {
+      "path": "vite.config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774344408053,
+      "type": "file"
+    },
+    {
+      "path": "src\\App.vue",
+      "accessCount": 1,
+      "lastAccessed": 1774344421907,
+      "type": "file"
+    },
+    {
+      "path": "server",
+      "accessCount": 1,
+      "lastAccessed": 1774344551530,
+      "type": "directory"
+    },
+    {
+      "path": "src",
+      "accessCount": 1,
+      "lastAccessed": 1774344552572,
+      "type": "directory"
+    },
+    {
+      "path": "hooks",
+      "accessCount": 1,
+      "lastAccessed": 1774344562656,
+      "type": "directory"
+    },
+    {
+      "path": "C:\\Users\\Mario\\.claude\\plans\\purring-greeting-simon.md",
+      "accessCount": 1,
+      "lastAccessed": 1774344863933,
+      "type": "file"
+    },
+    {
+      "path": "tsconfig.server.json",
+      "accessCount": 1,
+      "lastAccessed": 1774345097881,
+      "type": "file"
+    },
+    {
+      "path": "hooks\\pre-tool-use.js",
+      "accessCount": 1,
+      "lastAccessed": 1774345246655,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

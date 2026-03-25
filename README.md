@@ -5,6 +5,8 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)](https://github.com/MarioLuLu7/claude-super-monitor)
 [![IDE](https://img.shields.io/badge/IDE-VSCode-blue.svg)](https://github.com/MarioLuLu7/claude-super-monitor)
 
+English | **[简体中文](./README_CN.md)**
+
 > 实时监控 Claude Code 会话的 Web 仪表盘 — 工具调用、Token 估算、授权确认，一屏掌握。
 
 A real-time web dashboard for monitoring Claude Code sessions — track tool calls, estimate token usage, and authorize tools through a visual interface.

@@ -1,7 +1,7 @@
 import http from 'http';
 import { WebSocketServer as WSS, WebSocket } from 'ws';
 import { FileWatcher } from './file-watcher';
-import { watchIdeDir, watchFileHistoryDir, watchProjectDir, getOpenSessionIds } from './ide-detector';
+import { watchIdeDir, watchFileHistoryDir, watchProjectDir, getOpenSessionIds, getCliOpenSessionIds, getSessionSource, type SessionSource } from './ide-detector';
 
 /** 将对象序列化为纯 ASCII JSON（非 ASCII 字符转为 \uXXXX），避免 PowerShell 5.1 编码问题 */
 function asciiJson(obj: unknown): string {
@@ -35,6 +35,7 @@ interface ActiveSession {
   sessionId: string;
   displayName: string;  // 简短可读名，如 "Script"
   originalPath: string;
+  source: SessionSource; // 会话来源：vscode 或 cli
 }
 
 export class WebSocketServer {
@@ -94,6 +95,16 @@ export class WebSocketServer {
       console.log(`\x1b[32m[Claude Monitor] Server on http/ws://localhost:${this.port}\x1b[0m`);
       console.log(`\x1b[33m[Claude Monitor] Hook endpoint: POST http://localhost:${this.port}/api/hook\x1b[0m`);
     });
+
+    this.httpServer.on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`\x1b[31m[Claude Monitor] Port ${this.port} is already in use. Please wait a moment and try again, or kill the process using that port.\x1b[0m`);
+        // 尝试优雅关闭
+        this.stop();
+      } else {
+        console.error(`\x1b[31m[Claude Monitor] Server error:`, err.message, '\x1b[0m');
+      }
+    });
   }
 
   // ── 活跃会话管理 ────────────────────────────────────────────────────────────
@@ -102,23 +113,30 @@ export class WebSocketServer {
     const newKeys = new Set<string>();
 
     for (const proj of projects) {
-      if (!proj.activeInIde) continue;
+      // 跳过非活跃项目
+      if (!proj.activeInIde && !proj.activeInCli) continue;
       const appName = proj.originalPath.replace(/\\/g, '/').split('/').pop() ?? proj.name;
 
-      // 只取"在 VSCode 中打开的会话"（file-history 有记录 + 24h 内活跃）
-      const openIds = getOpenSessionIds(proj.name);
-      if (!openIds.length) continue;
+      // 合并 VSCode 和 CLI 会话
+      const vscodeIds = proj.activeInIde ? getOpenSessionIds(proj.name) : [];
+      const cliIds = proj.activeInCli ? getCliOpenSessionIds(proj.name) : [];
+      const allIds = [...new Set([...vscodeIds, ...cliIds])];
 
-      for (let idx = 0; idx < openIds.length; idx++) {
-        const sessionId = openIds[idx];
+      if (!allIds.length) continue;
+
+      for (let idx = 0; idx < allIds.length; idx++) {
+        const sessionId = allIds[idx];
         const key = `${proj.name}/${sessionId}`;
         newKeys.add(key);
 
         if (!this.activeSessions.has(key)) {
-          const displayName = openIds.length > 1 ? `${appName} #${idx + 1}` : appName;
+          const source = getSessionSource(sessionId);
+          const suffix = source === 'cli' ? ' (CLI)' : '';
+          const displayName = allIds.length > 1 ? `${appName} #${idx + 1}${suffix}` : appName + suffix;
+          console.log(`[WS Server] New session detected: ${key}, source: ${source}`);
           const info: ActiveSession = {
             key, projectName: proj.name, sessionId,
-            displayName, originalPath: proj.originalPath,
+            displayName, originalPath: proj.originalPath, source,
           };
           this.activeSessions.set(key, info);
 
@@ -317,5 +335,42 @@ export class WebSocketServer {
     if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(data));
   }
 
-  stop() { this.fw.stopAll(); this.wss?.close(); this.httpServer?.close(); }
+  stop() {
+    // 关闭所有客户端连接
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
+    }
+    this.clients.clear();
+
+    // 关闭 WebSocket 服务器
+    this.wss?.close();
+
+    // 关闭 HTTP 服务器
+    this.httpServer?.close();
+
+    // 停止所有文件监听
+    this.fw.stopAll();
+
+    // 清除所有 pending 的定时器
+    for (const [, pending] of this.pendingAuths) {
+      clearTimeout(pending.timer);
+    }
+    this.pendingAuths.clear();
+
+    for (const [, pending] of this.pendingQuestions) {
+      clearTimeout(pending.timer);
+    }
+    this.pendingQuestions.clear();
+
+    // 关闭项目监听器
+    for (const [, watcher] of this.projectWatchers) {
+      watcher.close();
+    }
+    this.projectWatchers.clear();
+
+    // 清空活跃会话
+    this.activeSessions.clear();
+  }
 }
