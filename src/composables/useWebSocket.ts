@@ -3,7 +3,7 @@ import type { SessionPane, AuthRequest, WSOutgoing, Notification, UserQuestionRe
 import { useSettings } from './useSettings';
 
 // 有执行动作的 level（立即显示面板）
-const ACTIVE_LEVELS = new Set(['thinking', 'working', 'auth', 'error']);
+const ACTIVE_LEVELS = new Set(['thinking', 'working', 'responding', 'auth', 'error']);
 
 export function useWebSocket() {
   const { settings } = useSettings();
@@ -157,7 +157,15 @@ export function useWebSocket() {
 
           const pane = panes.value.find((p) => p.key === key);
           if (pane) {
-            pane.items.push(item);
+            // 查找是否已存在相同 id 的 item（用于更新 responding → done）
+            const existingIndex = pane.items.findIndex((i) => i.id === item.id);
+            if (existingIndex >= 0) {
+              // 更新已存在的 item
+              pane.items[existingIndex] = item;
+            } else {
+              // 追加新 item
+              pane.items.push(item);
+            }
             if (data.tokens !== undefined) pane.tokens = data.tokens;
           }
 

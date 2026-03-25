@@ -19,6 +19,7 @@ export const en: Record<I18nKey, string> = {
   tool_notebook:    'Edit Notebook',
   tool_call:        'Call Tool',
   status_thinking:  'Thinking',
+  status_responding:'Responding',
   status_done:      'Reply Done',
   status_user_input:'User Input',
   status_auth_req:  'Needs Approval',

@@ -15,14 +15,14 @@
 
 ## ⚠️ 平台要求
 
-**当前限制：**
+**支持的平台：**
 - ✅ **Windows** - 完全支持
-- ❌ **macOS** - 暂不支持
-- ❌ **Linux** - 暂不支持
+- ✅ **macOS** - 完全支持 (v0.8.0+)
+- ✅ **Linux** - 完全支持 (v0.8.0+)
 - ✅ **VSCode Claude 扩展** - 支持
 - ✅ **Claude 终端版 (CLI)** - 支持 (v0.7.0+)
 
-> **注意**：此工具支持 Windows 上的 VSCode Claude Code 扩展和终端版 Claude CLI。macOS 和 Linux 的支持正在计划中。
+> **注意**：支持 VSCode Claude 扩展和终端版 Claude Code 的所有平台。
 
 ## 功能特性
 
@@ -73,7 +73,7 @@ claude-super-monitor -u
 ### 系统要求
 
 - **VSCode** 已安装并运行 Claude Code 扩展，**或** Claude CLI 会话
-- **Windows**（推荐 Windows 10/11）
+- **Windows 10/11**、**macOS** 或 **Linux**
 - **Node.js ≥ 18**
 
 ### 环境变量
@@ -89,6 +89,9 @@ $env:CLAUDE_SUPER_MONITOR_UI_PORT=8080; claude-super-monitor
 
 # Windows CMD
 set CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
+
+# macOS / Linux
+export CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
 ```
 
 ## 开发路线图
@@ -96,8 +99,8 @@ set CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
 | 功能 | 状态 | 描述 |
 |------|------|------|
 | Windows 支持 | ✅ 已完成 | 完整支持 Windows 10/11 |
-| macOS 支持 | 🚧 计划中 | macOS 兼容性 |
-| Linux 支持 | 🚧 计划中 | Linux 兼容性 |
+| macOS 支持 | ✅ 已完成 | 完整支持 macOS |
+| Linux 支持 | ✅ 已完成 | 完整支持 Linux |
 | VSCode 扩展 | ✅ 已完成 | 支持 VSCode Claude 扩展 |
 | Claude 终端 CLI | ✅ 已完成 | 支持终端版 Claude Code (v0.7.0+) |
 | 自动更新 | ✅ 已完成 | 内置更新命令 |
@@ -131,7 +134,7 @@ Claude Super Monitor 可以拦截工具调用，在 Claude 执行前请求你的
    - 你点击 **批准** 或 **拒绝**
    - Claude 相应地继续或取消
 
-钩子脚本在 Windows 上使用 PowerShell，60 秒后超时（默认拒绝）。
+钩子脚本是跨平台的（Node.js），60 秒后超时（默认拒绝）。
 
 ### AskUserQuestion 支持
 
@@ -193,10 +196,9 @@ npm start
 
 ### 没有显示会话
 
-- 确保 Claude Code 扩展正在 VSCode 中运行
+- 确保 Claude Code 扩展正在 VSCode 中运行，或 CLI 会话处于活动状态
 - 检查 `~/.claude/projects/` 是否存在
 - 验证 VSCode 窗口是否活动（检查 `~/.claude/ide/` 中的锁文件）
-- **注意**：此工具仅适用于 Windows 上的 VSCode Claude 扩展
 
 ### WebSocket 连接问题
 
@@ -206,9 +208,9 @@ npm start
 
 ### 钩子未触发
 
-- 验证 PowerShell 可用（Windows）
 - 检查 `~/.claude/settings.json` 中的 `PreToolUse` 钩子配置
 - 确保钩子路径指向 npm 包中的正确位置
+- 验证 Node.js 在 PATH 中可用
 
 ## 许可证
 

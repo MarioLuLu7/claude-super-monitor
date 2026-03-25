@@ -106,6 +106,7 @@ const latestUserInput = computed(() => {
 const ICONS: Record<StatusLevel, string> = {
   thinking: '???',
   working:  '>>>',
+  responding: '...',
   done:     'OK!',
   auth:     '!?!',
   error:    'ERR',
@@ -124,6 +125,7 @@ const ICONS: Record<StatusLevel, string> = {
 const CHARS: Record<StatusLevel, string> = {
   thinking: '~',
   working:  '▶',
+  responding: '…',
   done:     '★',
   auth:     '!',
   error:    '✗',

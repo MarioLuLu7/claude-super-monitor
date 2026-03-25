@@ -109,9 +109,10 @@ export function getCliActiveSessions(): CliSession[] {
       console.log(`[CLI Check] ${sessionId}: age=${Math.round(age/1000)}s, active=${age < threshold}`);
 
       if (age < threshold) {
-        const originalPath = projectName
-          .replace(/^([A-Za-z])--/, '$1:\\')
-          .replace(/--/g, '\\');
+        const isWin = process.platform === 'win32';
+        const originalPath = isWin
+          ? projectName.replace(/^([A-Za-z])--/, '$1:\\').replace(/--/g, '\\')
+          : '/' + projectName.replace(/--/g, '/');
 
         sessions.push({
           sessionId,

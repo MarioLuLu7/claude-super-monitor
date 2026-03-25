@@ -17,14 +17,14 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 
 ## ⚠️ Platform Requirements
 
-**Current Limitations:**
+**Supported Platforms:**
 - ✅ **Windows** - Fully supported
-- ❌ **macOS** - Not yet supported
-- ❌ **Linux** - Not yet supported
+- ✅ **macOS** - Fully supported (v0.8.0+)
+- ✅ **Linux** - Fully supported (v0.8.0+)
 - ✅ **VSCode Claude Extension** - Supported
 - ✅ **Claude Terminal (CLI)** - Supported (v0.7.0+)
 
-> **Note**: This tool works with both VSCode Claude extension and terminal-based Claude CLI on Windows. Support for macOS and Linux is planned.
+> **Note**: Works with VSCode Claude extension and terminal-based Claude Code on all platforms.
 
 ## Features
 
@@ -75,7 +75,7 @@ claude-super-monitor -u
 ### Requirements
 
 - **VSCode** with Claude Code extension installed and running, **or** Claude CLI session
-- **Windows** (Windows 10/11 recommended)
+- **Windows 10/11**, **macOS**, or **Linux**
 - **Node.js ≥ 18**
 
 ### Environment Variables
@@ -91,6 +91,9 @@ $env:CLAUDE_SUPER_MONITOR_UI_PORT=8080; claude-super-monitor
 
 # Windows CMD
 set CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
+
+# macOS / Linux
+export CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
 ```
 
 ## Roadmap
@@ -98,8 +101,8 @@ set CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
 | Feature | Status | Description |
 |---------|--------|-------------|
 | Windows Support | ✅ Complete | Full support for Windows 10/11 |
-| macOS Support | 🚧 Planned | macOS compatibility |
-| Linux Support | 🚧 Planned | Linux compatibility |
+| macOS Support | ✅ Complete | Full support for macOS |
+| Linux Support | ✅ Complete | Full support for Linux |
 | VSCode Extension | ✅ Complete | Works with VSCode Claude extension |
 | Claude Terminal CLI | ✅ Complete | Support for terminal-based Claude Code (v0.7.0+) |
 | Auto-update | ✅ Complete | Built-in update command |
@@ -133,7 +136,7 @@ Claude Super Monitor can intercept tool calls and ask for your approval before C
    - You click **Approve** or **Deny**
    - Claude continues or cancels accordingly
 
-The hook script uses PowerShell on Windows and times out after 60 seconds (defaults to deny).
+The hook script is cross-platform (Node.js) and times out after 60 seconds (defaults to deny).
 
 ### AskUserQuestion Support
 
@@ -195,10 +198,9 @@ Run `npm run build` first to build the frontend.
 
 ### No sessions showing
 
-- Make sure Claude Code extension is running in VSCode
+- Make sure Claude Code extension is running in VSCode, or CLI session is active
 - Check that `~/.claude/projects/` exists
 - Verify VSCode window is active (check lock files in `~/.claude/ide/`)
-- **Note**: This tool only works with VSCode Claude extension on Windows
 
 ### WebSocket connection issues
 
@@ -208,9 +210,9 @@ Run `npm run build` first to build the frontend.
 
 ### Hook not triggering
 
-- Verify PowerShell is available (Windows)
 - Check `~/.claude/settings.json` for `PreToolUse` hook configuration
 - Ensure the hook path points to the correct location in the npm package
+- Verify Node.js is available in your PATH
 
 ## License
 

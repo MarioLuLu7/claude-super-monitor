@@ -17,6 +17,7 @@ export const zh = {
   tool_notebook:    '编辑 Notebook',
   tool_call:        '调用工具',
   status_thinking:  '思考中',
+  status_responding:'回复中',
   status_done:      '已完成回复',
   status_user_input:'用户输入',
   status_auth_req:  '需要用户确认',

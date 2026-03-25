@@ -166,6 +166,7 @@ const currentKey = computed(() => currentItem.value?.key ?? 'status_idle');
 const ICONS: Record<StatusLevel, string> = {
   thinking: '💭',
   working: '🔧',
+  responding: '💬',
   done: '✓',
   auth: '?',
   error: '✗',

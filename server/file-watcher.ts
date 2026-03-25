@@ -25,7 +25,7 @@ export interface Session {
   size: number;
 }
 
-export type StatusLevel = 'thinking' | 'working' | 'done' | 'auth' | 'error' | 'idle';
+export type StatusLevel = 'thinking' | 'working' | 'responding' | 'done' | 'auth' | 'error' | 'idle';
 
 export interface QuestionOption { label: string; description?: string }
 export interface AskQuestion { question: string; header: string; options: QuestionOption[]; multiSelect?: boolean }
@@ -144,28 +144,37 @@ export function parseStatusItems(line: string): StatusItem[] {
           }
         }
 
-        // 有思考 → 先发送思考状态
+        // 有思考 → 暂存思考内容（不单独发送，后面和文本合并）
+        let thinkingDetail: string | undefined;
         if (hasThinking) {
-          const detail = thinkingText.trim().replace(/\n+/g, ' ').slice(0, 200) || undefined;
-          items.push({ id: `${ts}-thinking`, timestamp: ts, level: 'thinking', key: 'status_thinking', detail });
+          thinkingDetail = thinkingText.trim().replace(/\n+/g, ' ').slice(0, 100) || undefined;
         }
-        // 有文本内容 → 已完成回复（带内容摘要）
+        // 有文本内容 → 回复中（带内容摘要，如果有思考则合并）
         if (hasText) {
           let replyText = '';
           for (const c of content as Array<Record<string, unknown>>) {
             if (c.type === 'text') replyText += String(c.text ?? '');
           }
-          const detail = replyText.trim().replace(/\n+/g, ' ').slice(0, 200) || undefined;
-          items.push({ id: `${ts}-done`, timestamp: ts, level: 'done', key: 'status_done', detail });
+          let detail = replyText.trim().replace(/\n+/g, ' ').slice(0, 200) || undefined;
+          // 如果有思考内容，合并到 detail 中显示
+          if (thinkingDetail && detail) {
+            detail = `[思考] ${thinkingDetail} | ${detail}`;
+          } else if (thinkingDetail) {
+            detail = `[思考] ${thinkingDetail}`;
+          }
+          items.push({ id: `${ts}-responding`, timestamp: ts, level: 'responding', key: 'status_responding', detail });
+        } else if (hasThinking) {
+          // 只有思考没有文本 → 发送思考状态（会在下一条消息时转为 done）
+          items.push({ id: `${ts}-thinking`, timestamp: ts, level: 'thinking', key: 'status_thinking', detail: thinkingDetail });
         }
-        // 有工具调用但没有文本回复 → 发送完成状态
+        // 有工具调用但没有文本回复 → 继续等待
         if (hasToolUse && !hasText) {
-          items.push({ id: `${ts}-done`, timestamp: ts, level: 'done', key: 'status_done' });
+          // 不发送 done，继续等待后续文本回复
         }
       } else if (typeof content === 'string' && content.trim()) {
-        // content 为字符串 → 已完成回复
+        // content 为字符串 → 回复中（会在收到下一条消息时自动转为 done）
         const detail = content.trim().replace(/\n+/g, ' ').slice(0, 200) || undefined;
-        items.push({ id: `${ts}-done`, timestamp: ts, level: 'done', key: 'status_done', detail });
+        items.push({ id: `${ts}-responding`, timestamp: ts, level: 'responding', key: 'status_responding', detail });
       }
       return items;
     }
@@ -222,6 +231,12 @@ export function parseStatusItems(line: string): StatusItem[] {
 export class FileWatcher {
   private watchers = new Map<string, fs.FSWatcher>();
   private filePositions = new Map<string, number>();
+  // 追踪每个会话的最后一条 responding 状态
+  private pendingResponding = new Map<string, StatusItem>();
+  // 静默检测定时器
+  private silenceTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  // 静默检测超时（毫秒）：10秒
+  private static readonly SILENCE_TIMEOUT = 10000;
 
   getProjects(): Project[] {
     if (!fs.existsSync(BASE_DIR)) return [];
@@ -235,7 +250,10 @@ export class FileWatcher {
       .map((n) => {
         const sessions = this.getSessionsInDir(path.join(BASE_DIR, n));
         const latestMtime = sessions[0]?.mtime ?? new Date(0);
-        const originalPath = n.replace(/^([A-Za-z])--/, '$1:\\').replace(/--/g, '\\');
+        const isWin = process.platform === 'win32';
+        const originalPath = isWin
+          ? n.replace(/^([A-Za-z])--/, '$1:\\').replace(/--/g, '\\')
+          : '/' + n.replace(/--/g, '/');
         const activeInIde = activeNames.has(n);
         const activeInCli = cliProjectNames.has(n);
         return { name: n, originalPath, latestMtime, sessions, activeInIde, activeInCli };
@@ -303,6 +321,11 @@ export class FileWatcher {
     for (const l of lines) {
       for (const s of parseStatusItems(l)) all.push(s);
     }
+    // 历史记录中，最后一条如果是 responding 或 thinking，转为 done（会话已结束）
+    const last = all[all.length - 1];
+    if (last && (last.level === 'responding' || last.level === 'thinking')) {
+      all[all.length - 1] = { ...last, level: 'done', key: 'status_done' };
+    }
     return all;
   }
 
@@ -312,6 +335,35 @@ export class FileWatcher {
     if (this.watchers.has(key) || !fs.existsSync(filePath)) return;
 
     this.filePositions.set(filePath, fs.statSync(filePath).size);
+
+    // 辅助函数：将 pending responding 转为 done 并发送
+    const flushPendingResponding = () => {
+      const pending = this.pendingResponding.get(key);
+      if (pending) {
+        const doneItem: StatusItem = { ...pending, level: 'done', key: 'status_done' };
+        onStatus(doneItem);
+        this.pendingResponding.delete(key);
+      }
+    };
+
+    // 辅助函数：取消静默检测定时器
+    const cancelSilenceTimer = () => {
+      const timer = this.silenceTimers.get(key);
+      if (timer) {
+        clearTimeout(timer);
+        this.silenceTimers.delete(key);
+      }
+    };
+
+    // 辅助函数：启动静默检测定时器（10秒）
+    const startSilenceTimer = () => {
+      cancelSilenceTimer();
+      const timer = setTimeout(() => {
+        flushPendingResponding();
+        this.silenceTimers.delete(key);
+      }, FileWatcher.SILENCE_TIMEOUT);
+      this.silenceTimers.set(key, timer);
+    };
 
     const watcher = fs.watch(filePath, (evt) => {
       if (evt !== 'change') return;
@@ -328,9 +380,31 @@ export class FileWatcher {
       rl.on('line', (line) => {
         if (!line.trim()) return;
         console.log(`[FileWatcher] Parsing line: ${line.slice(0, 100)}...`);
+
+        // 先解析消息类型
+        let msgType: string | undefined;
+        try {
+          const msg = JSON.parse(line) as Record<string, unknown>;
+          msgType = String(msg.type ?? '');
+        } catch { /* ignore */ }
+
+        // 如果是 user 或 assistant 消息，先把之前的 responding 标记为 done
+        if (msgType === 'user' || msgType === 'assistant') {
+          cancelSilenceTimer();
+          flushPendingResponding();
+        }
+
         for (const item of parseStatusItems(line)) {
           console.log(`[FileWatcher] Status item: ${item.level} - ${item.key}`);
-          onStatus(item);
+
+          // 如果是 responding 或 thinking 状态，保存并启动静默检测
+          if (item.level === 'responding' || item.level === 'thinking') {
+            this.pendingResponding.set(key, item);
+            onStatus(item);
+            startSilenceTimer();
+          } else {
+            onStatus(item);
+          }
         }
       });
       this.filePositions.set(filePath, currentSize);
@@ -341,12 +415,24 @@ export class FileWatcher {
 
   unwatch(projectName: string, sessionId: string) {
     const key = `${projectName}/${sessionId}`;
+    // 取消静默检测定时器
+    const timer = this.silenceTimers.get(key);
+    if (timer) {
+      clearTimeout(timer);
+      this.silenceTimers.delete(key);
+    }
+    // 清理 pending 状态
+    this.pendingResponding.delete(key);
     this.watchers.get(key)?.close();
     this.watchers.delete(key);
   }
 
   stopAll() {
+    // 清理所有定时器
+    this.silenceTimers.forEach((timer) => clearTimeout(timer));
+    this.silenceTimers.clear();
     this.watchers.forEach((w) => w.close());
     this.watchers.clear();
+    this.pendingResponding.clear();
   }
 }
