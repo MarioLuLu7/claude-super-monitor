@@ -60,6 +60,7 @@ export function injectSettings(pkgRoot = process.cwd()) {
     (h) => JSON.stringify(h).includes(HOOK_MARKER),
   );
 
+  let hookChanged = false;
   if (existingIdx === -1) {
     // 首次注入
     preToolUse.unshift({
@@ -69,6 +70,7 @@ export function injectSettings(pkgRoot = process.cwd()) {
     });
     hooks.PreToolUse = preToolUse;
     settings.hooks = hooks;
+    hookChanged = true;
   } else if (preToolUse[existingIdx].matcher !== HOOK_MATCHER) {
     // matcher 过期，更新
     preToolUse[existingIdx] = {
@@ -78,10 +80,13 @@ export function injectSettings(pkgRoot = process.cwd()) {
     };
     hooks.PreToolUse = preToolUse;
     settings.hooks = hooks;
+    hookChanged = true;
   }
 
-  saveSettings(settings);
-  console.log('\x1b[32m[Claude Monitor] settings.json 已注入白名单 & Hook\x1b[0m');
+  if (allowChanged || hookChanged) {
+    saveSettings(settings);
+    console.log('\x1b[32m[Claude Monitor] settings.json 已注入白名单 & Hook\x1b[0m');
+  }
 }
 
 export function restoreSettings() {
@@ -90,26 +95,37 @@ export function restoreSettings() {
 
     // 移除通配符白名单
     const perms = (settings.permissions ?? {}) as Record<string, unknown>;
+    let permsChanged = false;
     if (Array.isArray(perms.allow)) {
-      perms.allow = (perms.allow as string[]).filter(
+      const filtered = (perms.allow as string[]).filter(
         (p) => !WILDCARD_PERMISSIONS.includes(p),
       );
-      settings.permissions = perms;
+      if (filtered.length !== (perms.allow as string[]).length) {
+        perms.allow = filtered;
+        settings.permissions = perms;
+        permsChanged = true;
+      }
     }
 
     // 移除我们注入的 Hook
     const hooks = (settings.hooks ?? {}) as Record<string, unknown>;
+    let hooksChanged = false;
     if (Array.isArray(hooks.PreToolUse)) {
+      const originalLength = (hooks.PreToolUse as Array<Record<string, unknown>>).length;
       hooks.PreToolUse = (hooks.PreToolUse as Array<Record<string, unknown>>).filter(
         (h) => !JSON.stringify(h).includes(HOOK_MARKER),
       );
-      if ((hooks.PreToolUse as unknown[]).length === 0) delete hooks.PreToolUse;
-      if (Object.keys(hooks).length === 0) delete settings.hooks;
-      else settings.hooks = hooks;
+      if ((hooks.PreToolUse as Array<Record<string, unknown>>).length !== originalLength) {
+        hooksChanged = true;
+        if ((hooks.PreToolUse as unknown[]).length === 0) delete hooks.PreToolUse;
+        if (Object.keys(hooks).length === 0) delete settings.hooks;
+        else settings.hooks = hooks;
+      }
     }
 
-    saveSettings(settings);
-    console.log('\x1b[33m[Claude Monitor] settings.json 已还原\x1b[0m');
+    if (permsChanged || hooksChanged) {
+      saveSettings(settings);
+    }
   } catch (e) {
     console.error('[Claude Monitor] 还原 settings.json 失败:', e);
   }

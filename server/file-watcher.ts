@@ -371,7 +371,7 @@ export class FileWatcher {
       const lastPos = this.filePositions.get(filePath) ?? 0;
       if (currentSize <= lastPos) { this.filePositions.set(filePath, currentSize); return; }
 
-      console.log(`[FileWatcher] File changed: ${path.basename(filePath)}, new bytes: ${currentSize - lastPos}`);
+      // File changed
 
       const rl = readline.createInterface({
         input: createReadStream(filePath, { start: lastPos }),
@@ -379,7 +379,7 @@ export class FileWatcher {
       });
       rl.on('line', (line) => {
         if (!line.trim()) return;
-        console.log(`[FileWatcher] Parsing line: ${line.slice(0, 100)}...`);
+        // Parsing line
 
         // 先解析消息类型
         let msgType: string | undefined;
@@ -395,7 +395,7 @@ export class FileWatcher {
         }
 
         for (const item of parseStatusItems(line)) {
-          console.log(`[FileWatcher] Status item: ${item.level} - ${item.key}`);
+          // Status item processed
 
           // 如果是 responding 或 thinking 状态，保存并启动静默检测
           if (item.level === 'responding' || item.level === 'thinking') {

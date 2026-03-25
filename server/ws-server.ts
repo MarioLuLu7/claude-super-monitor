@@ -133,7 +133,7 @@ export class WebSocketServer {
           const source = getSessionSource(sessionId);
           const suffix = source === 'cli' ? ' (CLI)' : '';
           const displayName = allIds.length > 1 ? `${appName} #${idx + 1}${suffix}` : appName + suffix;
-          console.log(`[WS Server] New session detected: ${key}, source: ${source}`);
+          // New session detected
           const info: ActiveSession = {
             key, projectName: proj.name, sessionId,
             displayName, originalPath: proj.originalPath, source,

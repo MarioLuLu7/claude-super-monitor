@@ -106,7 +106,7 @@ export function getCliActiveSessions(): CliSession[] {
       // 判断是否活跃（使用更宽松的 30 分钟阈值）
       const age = now - mtime;
       const threshold = CLI_ACTIVE_THRESHOLD_MS * 6; // 30 分钟
-      console.log(`[CLI Check] ${sessionId}: age=${Math.round(age/1000)}s, active=${age < threshold}`);
+      // CLI session check (age check only)
 
       if (age < threshold) {
         const isWin = process.platform === 'win32';
