@@ -55,7 +55,7 @@ export function getIdeSessions(): IdeSession[] {
 
 /** 工作目录路径 → Claude 项目名 */
 export function workspaceToProjectName(folder: string): string {
-  return folder.replace(/\\/g, '-').replace(':', '-');
+  return folder.replace(/\\/g, '-').replace(/\//g, '-').replace(':', '-');
 }
 
 /** 活跃项目名集合（PID 存活的 lock 文件对应的 workspace + CLI 活跃项目） */
