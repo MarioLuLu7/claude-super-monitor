@@ -21,10 +21,10 @@ A real-time web dashboard for monitoring Claude Code sessions — track tool cal
 - ✅ **Windows** - Fully supported
 - ❌ **macOS** - Not yet supported
 - ❌ **Linux** - Not yet supported
-- ✅ **VSCode Claude Extension** - Required
-- ❌ **Claude Terminal (CLI)** - Not yet supported
+- ✅ **VSCode Claude Extension** - Supported
+- ✅ **Claude Terminal (CLI)** - Supported (v0.7.0+)
 
-> **Note**: This tool currently only works with the Claude Code extension for VSCode on Windows. Support for macOS, Linux, and the terminal-based Claude CLI is planned.
+> **Note**: This tool works with both VSCode Claude extension and terminal-based Claude CLI on Windows. Support for macOS and Linux is planned.
 
 ## Features
 
@@ -74,7 +74,7 @@ claude-super-monitor -u
 
 ### Requirements
 
-- **VSCode** with Claude Code extension installed and running
+- **VSCode** with Claude Code extension installed and running, **or** Claude CLI session
 - **Windows** (Windows 10/11 recommended)
 - **Node.js ≥ 18**
 
@@ -101,7 +101,7 @@ set CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
 | macOS Support | 🚧 Planned | macOS compatibility |
 | Linux Support | 🚧 Planned | Linux compatibility |
 | VSCode Extension | ✅ Complete | Works with VSCode Claude extension |
-| Claude Terminal CLI | 🚧 Planned | Support for terminal-based Claude Code |
+| Claude Terminal CLI | ✅ Complete | Support for terminal-based Claude Code (v0.7.0+) |
 | Auto-update | ✅ Complete | Built-in update command |
 
 ## How It Works

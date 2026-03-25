@@ -19,10 +19,10 @@
 - ✅ **Windows** - 完全支持
 - ❌ **macOS** - 暂不支持
 - ❌ **Linux** - 暂不支持
-- ✅ **VSCode Claude 扩展** - 必需
-- ❌ **Claude 终端版 (CLI)** - 暂不支持
+- ✅ **VSCode Claude 扩展** - 支持
+- ✅ **Claude 终端版 (CLI)** - 支持 (v0.7.0+)
 
-> **注意**：此工具目前仅支持 Windows 上的 VSCode Claude Code 扩展。macOS、Linux 和终端版 Claude CLI 的支持正在计划中。
+> **注意**：此工具支持 Windows 上的 VSCode Claude Code 扩展和终端版 Claude CLI。macOS 和 Linux 的支持正在计划中。
 
 ## 功能特性
 
@@ -72,7 +72,7 @@ claude-super-monitor -u
 
 ### 系统要求
 
-- **VSCode** 已安装并运行 Claude Code 扩展
+- **VSCode** 已安装并运行 Claude Code 扩展，**或** Claude CLI 会话
 - **Windows**（推荐 Windows 10/11）
 - **Node.js ≥ 18**
 
@@ -99,7 +99,7 @@ set CLAUDE_SUPER_MONITOR_UI_PORT=8080 && claude-super-monitor
 | macOS 支持 | 🚧 计划中 | macOS 兼容性 |
 | Linux 支持 | 🚧 计划中 | Linux 兼容性 |
 | VSCode 扩展 | ✅ 已完成 | 支持 VSCode Claude 扩展 |
-| Claude 终端 CLI | 🚧 计划中 | 支持终端版 Claude Code |
+| Claude 终端 CLI | ✅ 已完成 | 支持终端版 Claude Code (v0.7.0+) |
 | 自动更新 | ✅ 已完成 | 内置更新命令 |
 
 ## 工作原理
