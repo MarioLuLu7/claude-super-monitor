@@ -321,9 +321,9 @@ export class FileWatcher {
     for (const l of lines) {
       for (const s of parseStatusItems(l)) all.push(s);
     }
-    // 历史记录中，最后一条如果是 responding 或 thinking，转为 done（会话已结束）
+    // 历史记录中，最后一条如果是 working/responding/thinking，转为 done（会话已结束）
     const last = all[all.length - 1];
-    if (last && (last.level === 'responding' || last.level === 'thinking')) {
+    if (last && (last.level === 'working' || last.level === 'responding' || last.level === 'thinking')) {
       all[all.length - 1] = { ...last, level: 'done', key: 'status_done' };
     }
     return all;
