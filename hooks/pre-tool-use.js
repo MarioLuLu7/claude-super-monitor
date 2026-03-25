@@ -7,7 +7,7 @@
  * to the Claude Super Monitor web UI for user authorization.
  */
 
-const API = 'http://localhost:5998/api/hook';
+const API = `http://localhost:${process.env.CLAUDE_SUPER_MONITOR_WS_PORT ?? 5998}/api/hook`;
 const TIMEOUT_MS = 65000; // Slightly longer than server's 60s timeout
 
 /**

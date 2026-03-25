@@ -1,6 +1,6 @@
 {
   "name": "claude-super-monitor",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "Real-time web dashboard for monitoring Claude Code sessions — tool calls, tokens, and tool-use authorization in one view.",
   "type": "module",
   "bin": {

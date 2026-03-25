@@ -81,6 +81,18 @@ npm root -g
 }
 ```
 
+## 自定义端口
+
+如果需要通过环境变量自定义端口（默认 5998）：
+
+```bash
+# 启动时指定端口
+set CLAUDE_SUPER_MONITOR_WS_PORT=6000
+claude-super-monitor
+```
+
+Hook 脚本会自动读取相同的环境变量来连接正确的端口。
+
 ## 工作流程
 
 1. `npm run dev` 启动 Claude Monitor

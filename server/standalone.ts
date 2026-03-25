@@ -31,9 +31,22 @@ function openBrowser(url: string) {
   else exec(`xdg-open "${url}"`);
 }
 
+function serveIndexHtml(res: http.ServerResponse) {
+  const indexPath = path.join(distDir, 'index.html');
+  let html = fs.readFileSync(indexPath, 'utf-8');
+  // 注入 WebSocket 端口配置
+  const configScript = `<script>window.CSM_CONFIG={WS_PORT:${WS_PORT}}</script>`;
+  html = html.replace('<head>', `<head>${configScript}`);
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
 function serveStatic(req: http.IncomingMessage, res: http.ServerResponse) {
   let urlPath = (req.url ?? '/').split('?')[0];
-  if (urlPath === '/') urlPath = '/index.html';
+  if (urlPath === '/') {
+    serveIndexHtml(res);
+    return;
+  }
 
   const filePath = path.join(distDir, urlPath);
 
@@ -44,9 +57,7 @@ function serveStatic(req: http.IncomingMessage, res: http.ServerResponse) {
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     // SPA fallback
-    const indexPath = path.join(distDir, 'index.html');
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    fs.createReadStream(indexPath).pipe(res);
+    serveIndexHtml(res);
     return;
   }
 

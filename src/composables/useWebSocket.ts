@@ -2,6 +2,10 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import type { SessionPane, AuthRequest, WSOutgoing, Notification, UserQuestionRequest } from '../types';
 import { useSettings } from './useSettings';
 
+// 从服务器注入的配置读取 WebSocket 端口，或使用默认值
+const WS_PORT = (window as unknown as { CSM_CONFIG?: { WS_PORT: number } }).CSM_CONFIG?.WS_PORT ?? 5998;
+const WS_URL = `ws://localhost:${WS_PORT}`;
+
 // 有执行动作的 level（立即显示面板）
 const ACTIVE_LEVELS = new Set(['thinking', 'working', 'responding', 'auth', 'error']);
 
@@ -83,7 +87,7 @@ export function useWebSocket() {
 
   // ── WebSocket 连接 ────────────────────────────────────────────────────────
   function connect() {
-    const socket = new WebSocket('ws://localhost:5998');
+    const socket = new WebSocket(WS_URL);
 
     socket.onopen = () => { connected.value = true; };
 

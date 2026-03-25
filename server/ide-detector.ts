@@ -168,8 +168,15 @@ export function getSessionSource(sessionId: string): SessionSource {
  *
  * 这样可以精确区分"当前 VSCode 打开的会话"与"历史上曾经打开过的旧会话"。
  * 结果按 mtime 降序排列（最近活跃的排前面）。
+ *
+ * @param projectName - 项目名称
+ * @param options - 可选配置
+ * @param options.skipTodayFilter - 是否跳过"今天零点"过滤（用于 file-history 变化时的即时刷新）
  */
-export function getOpenSessionIds(projectName: string): string[] {
+export function getOpenSessionIds(
+  projectName: string,
+  options?: { skipTodayFilter?: boolean }
+): string[] {
   const projDir = path.join(PROJECTS_DIR, projectName);
   if (!fs.existsSync(projDir)) return [];
 
@@ -203,7 +210,8 @@ export function getOpenSessionIds(projectName: string): string[] {
 
     // JSONL 最后写入时间 = 会话实际最后活跃时间
     // 早于今天零点的会话不再返回（避免初始化时展示大量过期等待会话）
-    if (jsonlStat.mtimeMs < todayStartMs) continue;
+    // 但当 skipTodayFilter 为 true 时跳过此过滤（用于 file-history 变化时的即时刷新）
+    if (!options?.skipTodayFilter && jsonlStat.mtimeMs < todayStartMs) continue;
 
     const histDir = path.join(HISTORY_DIR, sessionId);
 
@@ -237,7 +245,10 @@ export function watchIdeDir(onChange: () => void): fs.FSWatcher | null {
 /** 监听 file-history 目录变化（VSCode 内切换会话时触发） */
 export function watchFileHistoryDir(onChange: () => void): fs.FSWatcher | null {
   if (!fs.existsSync(HISTORY_DIR)) return null;
-  return fs.watch(HISTORY_DIR, () => setTimeout(onChange, 500));
+  return fs.watch(HISTORY_DIR, () => {
+    // 文件变化时立即触发，减少延迟
+    setTimeout(onChange, 100);
+  });
 }
 
 /** 监听某个项目目录，新增 JSONL（新建会话）时触发 */
