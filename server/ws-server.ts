@@ -86,12 +86,10 @@ export class WebSocketServer {
 
     // ide 目录变化 → 重新扫描（VSCode 窗口开关）
     watchIdeDir(() => {
-      console.log('[Claude Monitor] IDE directory changed, refreshing sessions...');
       this.refreshActiveSessions();
     });
     // file-history 目录变化 → 重新扫描（VSCode 内新建/切换会话）
     watchFileHistoryDir(() => {
-      console.log('[Claude Monitor] File history changed, refreshing sessions (with skipTodayFilter)...');
       this.refreshActiveSessions({ skipTodayFilter: true });
     });
     // 定时轮询，处理会话关闭（关闭不产生文件事件）
@@ -130,7 +128,6 @@ export class WebSocketServer {
 
       if (!allIds.length) continue;
 
-      console.log(`[Claude Monitor] Project ${proj.name}: found ${allIds.length} sessions (vscode: ${vscodeIds.length}, cli: ${cliIds.length})`);
 
       for (let idx = 0; idx < allIds.length; idx++) {
         const sessionId = allIds[idx];
